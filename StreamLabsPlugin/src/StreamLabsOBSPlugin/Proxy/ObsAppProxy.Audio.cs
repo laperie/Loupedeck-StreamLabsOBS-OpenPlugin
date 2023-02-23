@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.ObsStudioPlugin
+﻿namespace Loupedeck.SLOBS
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +6,6 @@
     using System.Runtime.Remoting.Messaging;
     using System.Web;
 
-    using OBSWebsocketDotNet;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see

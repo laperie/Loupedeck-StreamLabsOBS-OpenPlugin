@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.ObsStudioPlugin.Actions
+﻿namespace Loupedeck.SLOBS.Actions
 {
     using System;
     using System.Collections.Generic;

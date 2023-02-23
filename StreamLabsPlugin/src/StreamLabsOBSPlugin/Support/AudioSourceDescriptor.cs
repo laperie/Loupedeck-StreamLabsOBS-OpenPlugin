@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.ObsStudioPlugin
+﻿namespace Loupedeck.SLOBS
 {
     using System;
     using OBSWebsocketDotNet;

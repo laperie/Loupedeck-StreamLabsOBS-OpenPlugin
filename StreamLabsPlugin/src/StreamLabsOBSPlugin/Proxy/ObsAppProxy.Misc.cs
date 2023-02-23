@@ -1,9 +1,9 @@
-﻿namespace Loupedeck.ObsStudioPlugin
+﻿namespace Loupedeck.SLOBS
 {
     using System;
     using System.Collections.Generic;
 
-    using OBSWebsocketDotNet;
+
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -24,7 +24,7 @@
 
                     //Generate unique filename 
                     var filename = System.IO.Path.Combine(ObsAppProxy.ScreenshotsSavingPath, "Screenshot-" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".png");
-                    var resp = this.TakeSourceScreenshot((String)currentScene, null, filename, -1, -1);
+//                    var resp = this.TakeSourceScreenshot((String)currentScene, null, filename, -1, -1);
                     this.Plugin.Log.Info($"Screenshot taken and saved to {resp.ImageFile}");
                 }
                 catch (Exception ex)
