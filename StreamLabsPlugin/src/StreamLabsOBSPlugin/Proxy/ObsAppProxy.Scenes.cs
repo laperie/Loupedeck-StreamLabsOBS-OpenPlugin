@@ -1,10 +1,33 @@
-﻿namespace Loupedeck.SLOBS
+namespace Loupedeck.SLOBS
 {
     using System;
     using System.Collections.Generic;
 
     using OBSWebsocketDotNet;
     using OBSWebsocketDotNet.Types;
+
+    internal class LDSceneItem
+    {
+        public String SourceName { get; private set; }
+        public LDSceneItem(String sourceName) => this.SourceName = sourceName; 
+    }
+
+    internal class Scene
+    {
+        public String Name { get; private set; }
+        public  List<LDSceneItem> Items { get; private set; } 
+        public Scene(OBSScene scene)
+        {
+            this.Name = scene.Name;
+            this.Items = scene.Items.ConvertAll(x => new LDSceneItem(x.SourceName));
+        }
+
+        public Scene()
+        {
+            this.Name = "";
+            this.Items = new List<LDSceneItem>();
+        }
+    }
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -15,17 +38,53 @@
         public event EventHandler<EventArgs> AppEvtSceneListChanged;
 
         public event EventHandler<OldNewStringChangeEventArgs> AppEvtCurrentSceneChanged;
+        public Scene CurrentScene { get; private set; } = new Scene();
 
-        public OBSScene CurrentScene { get; private set; } = new OBSScene();
+        public List<Scene> Scenes { get; private set; } = new List<Scene>();
 
-        public List<OBSScene> Scenes { get; private set; } = new List<OBSScene>();
+        
+
+        /// <summary>
+        /// Attemts to get the Scene object for scene in current collection
+        /// </summary>
+        /// <param name="sceneName">Name of scene</param>
+        /// <param name="scene">scene object</param>
+        /// <returns>true if scene retreived</returns>
+        public Boolean TryGetSceneByName(String sceneName, out Scene scene)
+        {
+            scene = null;
+            if(!String.IsNullOrEmpty(sceneName))
+            {
+                scene = this.Scenes.Find(x => x.Name == sceneName);
+            }
+            return scene != null;
+        }
+        public void AppSwitchToScene(String newScene)
+        {
+            if (this.IsAppConnected && this.TryGetSceneByName(newScene, out var _))
+            {
+                this.Plugin.Log.Info($"Switching to scene {newScene}");
+
+                Helpers.TryExecuteSafe(() =>
+                {
+                    if (this._studioMode)
+                    {
+                        this.SetPreviewScene(newScene);
+                    }
+                    else
+                    {
+                        this.SetCurrentScene(newScene);
+                    }
+                });
+            }
+        }
 
         private void OnObsSceneListChanged(Object sender, EventArgs e)
         {
             // Rescan the scene list
             if (this.IsAppConnected && Helpers.TryExecuteFunc(() => this.GetSceneList(), out var listInfo))
             {
-                this.Scenes = (listInfo as GetSceneListInfo).Scenes;
+                this.Scenes = listInfo.Scenes.ConvertAll(x => new Scene(x));
 
                 this.Plugin.Log.Info($"OBS Rescanned scene list. Currently {this.Scenes?.Count} scenes in collection {this.CurrentSceneCollection} ");
 
@@ -52,23 +111,6 @@
                 this.Plugin.Log.Warning("Cannot handle SceneListChanged event");
             }
         }
-
-        /// <summary>
-        /// Attemts to get the Scene object for scene in current collection
-        /// </summary>
-        /// <param name="sceneName">Name of scene</param>
-        /// <param name="scene">scene object</param>
-        /// <returns>true if scene retreived</returns>
-        public Boolean TryGetSceneByName(String sceneName, out OBSScene scene)
-        {
-            scene = null;
-            if(!String.IsNullOrEmpty(sceneName))
-            {
-                scene = this.Scenes.Find(x => x.Name == sceneName);
-            }
-            return scene != null;
-        }
-
         private void OnSceneChanged(String newScene)
         {
             if (this.TryGetSceneByName(newScene, out var scene) && this.CurrentScene != scene)
@@ -129,25 +171,6 @@
                 this.Plugin.Log.Info($"OnObsSceneChanged to {newScene} ignoring in Studio mode");
             }
         }
-
-        public void AppSwitchToScene(String newScene)
-        {
-            if (this.IsAppConnected && this.TryGetSceneByName(newScene, out var _ ))
-            {
-                this.Plugin.Log.Info($"Switching to scene {newScene}");
-
-                Helpers.TryExecuteSafe(() =>
-                {
-                    if (this._studioMode)
-                    {
-                        this.SetPreviewScene(newScene);
-                    }
-                    else
-                    {
-                        this.SetCurrentScene(newScene);
-                    }
-                });
-            }
-        }
+        
     }
 }
