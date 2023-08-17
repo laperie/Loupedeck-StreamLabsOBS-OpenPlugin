@@ -16,16 +16,14 @@
 
         public void AppRunTransition()
         {
-            if (this.IsAppConnected && this._studioMode)
+            if (this.IsAppConnected && this._currentStudioMode)
             {
-                if (Helpers.TryExecuteSafe(() => true /* this.TransitionToProgram()*/))
-                {
-                    this.Plugin.Log.Info("Transition executed successfully");
-                }
-                else
-                {
-                    this.Plugin.Log.Warning("Cannot run transition");
-                }
+                this.ExecuteSlobsMethodSync("executeStudioModeTransition", Constants.TransitionsService);
+                this.Plugin.Log.Info("Transition executed successfully");
+                //else
+                //{
+                //    this.Plugin.Log.Warning("Cannot run transition");
+                //}
             }
         }
 
@@ -35,19 +33,31 @@
 
         public void AppStopStudioMode() => this.SafeRunConnected(() => this.DisableStudioMode(), "Cannot stop studio mode");
 
-        void ToggleStudioMode() { }
-        void EnableStudioMode() { }
-        void DisableStudioMode() { }
+        void ToggleStudioMode()
+        {
+            if (this._currentStudioMode)
+            {
+                this.DisableStudioMode();
+            }
+            else
+            {
+                 this.EnableStudioMode();
+            }
+        }
+
+        void EnableStudioMode() => this.ExecuteSlobsMethodSync("enableStudioMode", Constants.TransitionsService);
+        void DisableStudioMode() => this.ExecuteSlobsMethodSync("disableStudioMode", Constants.TransitionsService);
 
 
         // Caching studio mode
-        private Boolean _studioMode = false;
+        private Boolean _currentStudioMode = false;
 
-        private void OnObsStudioModeStateChange(Object sender, Boolean enabled)
+        private void OnObsStudioModeStateChange(Object sender, BoolParamArgs arg)
         {
-            this.Plugin.Log.Info($"OBS StudioMode State change, enabled={enabled}");
-            this._studioMode = enabled;
-            if (enabled)
+            this._currentStudioMode = arg.Value;
+            this.Plugin.Log.Info($"OBS StudioMode Value change, enabled={this._currentStudioMode}");
+           
+            if (this._currentStudioMode)
             {
                 this.AppEvtStudioModeOn?.Invoke(this, new EventArgs());
             }

@@ -28,12 +28,24 @@
 
         public void AppResumeRecording() => this.SafeRunConnected(() => this.ResumeRecording(), "Cannot resume recording");
 
-        private void StartRecording() { }
-        private void StopRecording() { }
-        private void ToggleRecording() { }
+        private void StartRecording()
+        {
+            if (!this.InRecording)
+            {
+                this.ToggleRecording();
+            }
+        }
+
+        private void StopRecording() 
+        { if (this.InRecording)
+            {
+                this.ToggleRecording();
+            }
+        }
+        private void ToggleRecording() => this.ExecuteSlobsMethodSync("toggleRecording", Constants.StreamingService);
         private void PauseRecording() { }
         private void ResumeRecording() { }
-        private void ToggleRecordingPause() { } 
+        
 
         private void OnObsRecordPaused(Object sender, EventArgs e)
         {
@@ -46,15 +58,16 @@
             this.IsRecordingPaused = false;
             this.AppEvtRecordingResumed?.Invoke(sender, e);
         }
-#if false
+
         // FIXME: Provide customized images for starting/started... -- For that, create special event handler on Action side.
-        private void OnObsRecordingStateChange(OBSWebsocket sender, OBSWebsocketDotNet.Types.OutputState newState)
+        private void OnObsRecordingStateChange(Object sender, RecordingStateArgs v)
         {
+            var newState = v.Value;
             this.Plugin.Log.Info($"OBS Recording state change, new state is {newState}");
 
             this.IsRecordingPaused = false;
 
-            if ((newState == OBSWebsocketDotNet.Types.OutputState.Started) || (newState == OBSWebsocketDotNet.Types.OutputState.Starting))
+            if ((newState == StreamlabsRecordingStatus.Recording) || (newState == StreamlabsRecordingStatus.Starting))
             {
                 this.InRecording = true;
                 this.AppEvtRecordingOn?.Invoke(this, new EventArgs());
@@ -80,6 +93,6 @@
                 this.PauseRecording();
             }
         }
-#endif
+
     }
 }

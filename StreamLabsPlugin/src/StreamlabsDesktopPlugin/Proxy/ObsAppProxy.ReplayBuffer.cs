@@ -30,16 +30,30 @@
             }
         }
 
-        private void SaveReplayBuffer() {}
-        private void  ToggleReplayBuffer() {}
-        private void StopReplayBuffer() { }
-        private void StartReplayBuffer() { }
-#if false
-        private void OnObsReplayBufferStateChange(OBSWebsocket sender, OBSWebsocketDotNet.Types.OutputState newState)
+        private void SaveReplayBuffer() => this.ExecuteSlobsMethodSync("saveReplay", Constants.StreamingService);
+        private void ToggleReplayBuffer()
         {
-            this.Plugin.Log.Info($"OBS Replay buffer state change, new state {newState}");
+            if (this._currentReplayBuferStatus == StreamlabsReplayBufferStatus.Running)
+            {
+                this.StopReplayBuffer();
+            }
+            else if (this._currentReplayBuferStatus == StreamlabsReplayBufferStatus.Offline)
+            {
+                this.StartReplayBuffer();
+            }
+        }
+                  
+        private void StopReplayBuffer() => this.ExecuteSlobsMethodSync("stopReplayBuffer", Constants.StreamingService);
+        private void StartReplayBuffer() => this.ExecuteSlobsMethodSync("startReplayBuffer", Constants.StreamingService);
 
-            if ((newState == OBSWebsocketDotNet.Types.OutputState.Started) || (newState == OBSWebsocketDotNet.Types.OutputState.Starting))
+        private StreamlabsReplayBufferStatus _currentReplayBuferStatus = StreamlabsReplayBufferStatus.NONE;
+        private void OnObsReplayBufferStateChange(Object sender, ReplayBufferEventArgs arg)
+        {
+            this._currentReplayBuferStatus = arg.Value;
+
+            this.Plugin.Log.Info($"OBS Replay buffer state change, new state {this._currentReplayBuferStatus}");
+            
+            if (this._currentReplayBuferStatus == StreamlabsReplayBufferStatus.Running)
             {
                 this.AppEvtReplayBufferOn?.Invoke(this, new EventArgs());
             }
@@ -48,6 +62,6 @@
                 this.AppEvtReplayBufferOff?.Invoke(this, new EventArgs());
             }
         }
-#endif
+
     }
 }

@@ -1,7 +1,9 @@
 ﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
-   
+
+    using SLOBSharp.Client.Responses;
+
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -38,24 +40,35 @@
             }
         }
 
-        void StartStreaming() { }
-        void StopStreaming() { }
-        void ToggleStreaming() { }
-
-
-
-        private Boolean StreamingStateChangeIsInProgress() => false; //this._currentStreamingState == OBSWebsocketDotNet.Types.OutputState.Starting || this._currentStreamingState == OBSWebsocketDotNet.Types.OutputState.Stopping;
-#if false
-        private OBSWebsocketDotNet.Types.OutputState _currentStreamingState = OBSWebsocketDotNet.Types.OutputState.Stopped;
-        
-
-        private void OnObsStreamingStateChange(OBSWebsocket sender, OBSWebsocketDotNet.Types.OutputState newState)
+        void StartStreaming() 
+        { 
+            if(this._currentSlobsStreamingState == StreamlabsStreamingStatus.Offline)
+            {
+                this.ToggleStreaming();
+            }
+        }
+        void StopStreaming()
         {
+            if (this._currentSlobsStreamingState == StreamlabsStreamingStatus.Live)
+            {
+                this.ToggleStreaming();
+            }
+        }
+
+        private void ToggleStreaming() => this.ExecuteSlobsMethodSync("toggleStreaming", Constants.StreamingService);
+
+        private Boolean StreamingStateChangeIsInProgress() => false; //this._currentSlobsState == OBSWebsocketDotNet.Types.OutputState.Starting || this._currentSlobsState == OBSWebsocketDotNet.Types.OutputState.Stopping;
+
+        private StreamlabsStreamingStatus _currentSlobsStreamingState = StreamlabsStreamingStatus.NONE;
+
+        private void OnObsStreamingStateChange(Object sender, StreamingStateArgs v)
+        {
+            var newState = v.Value;
             this.Plugin.Log.Info($"OBS StreamingStateChange, new state {newState}");
 
-            this._currentStreamingState = newState;
+            this._currentSlobsStreamingState = newState;
 
-            if ((newState == OBSWebsocketDotNet.Types.OutputState.Started) || (newState == OBSWebsocketDotNet.Types.OutputState.Starting))
+            if ((newState == StreamlabsStreamingStatus.Live) || (newState == StreamlabsStreamingStatus.Starting))
             {
                 this.AppEvtStreamingOn?.Invoke(this, new EventArgs());
             }
@@ -64,6 +77,6 @@
                 this.AppEvtStreamingOff?.Invoke(this, new EventArgs());
             }
         }
-#endif
+
     }
 }

@@ -152,7 +152,7 @@
             }
         }
 
-        // Instead of State for Multistate actions, we will hold the mute state here
+        // Instead of Value for Multistate actions, we will hold the mute state here
         private readonly Dictionary<String, Boolean> _muteStates = new Dictionary<String, Boolean>();
 
         private void AddSource(String sourceName, Boolean isSpecialSource = false)

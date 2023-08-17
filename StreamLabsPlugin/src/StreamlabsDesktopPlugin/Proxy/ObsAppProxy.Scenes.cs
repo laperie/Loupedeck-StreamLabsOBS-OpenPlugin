@@ -64,7 +64,7 @@ namespace Loupedeck.StreamlabsPlugin
 
                 Helpers.TryExecuteSafe(() =>
                 {
-                    if (this._studioMode)
+                    if (this._currentStudioMode)
                     {
                         //this.SetPreviewScene(newScene);
                     }

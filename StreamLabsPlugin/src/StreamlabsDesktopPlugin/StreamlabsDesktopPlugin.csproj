@@ -39,10 +39,6 @@
     <OutputPath>..\..\bin\win\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LoupedeckShared">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Loupedeck\Loupedeck2\LoupedeckShared.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -80,6 +76,7 @@
     <Compile Include="Actions\ReplayBufferToggleCommand.cs" />
     <Compile Include="ObsAppProxy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Proxy\ObsAppProxy.Events.cs" />
     <Compile Include="StreamlabsDesktopApplication.cs" />
     <Compile Include="StreamlabsDesktopPlugin.cs" />
     <Compile Include="Actions\StreamingToggleCommand.cs" />

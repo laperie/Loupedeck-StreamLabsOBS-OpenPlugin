@@ -23,7 +23,7 @@ namespace Loupedeck.StreamlabsPlugin
         public StreamlabsPlugin()
         {
             StreamlabsPlugin.Proxy = new AppProxy(this);
-            StreamlabsPlugin.Proxy.Connect();
+            StreamlabsPlugin.Proxy.AppConnected += this.OnAppConnStatusChange;
 
 /*            this._connector = new ObsConnector(StreamlabsPlugin.Proxy, this.GetPluginDataDirectory(),
                                 (Object sender, EventArgs e) => this.OnPluginStatusChanged(Loupedeck.PluginStatus.Warning, this.Localization.GetString("Connecting to OBS"), "https://support.loupedeck.com/obs-guide", ""));
@@ -47,9 +47,9 @@ namespace Loupedeck.StreamlabsPlugin
             StreamlabsPlugin.Proxy.AppConnected += this.OnAppConnStatusChange;
             StreamlabsPlugin.Proxy.AppDisconnected += this.OnAppConnStatusChange;
 
-            StreamlabsPlugin.Proxy.RegisterAppEvents(); 
-
             //this._connector.Start();
+
+            StreamlabsPlugin.Proxy.Connect();
 
             this.Update_PluginStatus();
         }

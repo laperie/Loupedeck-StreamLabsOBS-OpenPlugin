@@ -26,7 +26,7 @@ namespace SLOBSharp.Domain.Services
 
         Task<IEnumerable<SlobsRpcResponse>> ExecuteRequestsAsync(params ISlobsRequest[] requests);
 
-        Task<Boolean> IsWarmingUpConnectionSucceeded();
+        Task<Boolean> TryConnecting();
 
         #region Subscription
 
@@ -44,18 +44,17 @@ namespace SLOBSharp.Domain.Services
 
         void DisposeSubscriptionPipe();
 
-        event SlobsPipeService.SubscriptionResponseReadedHandler SubscriptionResponseReaded;
+        event EventHandler<OneStringEventArgs> subscriptionEvt;
 
         #endregion
     }
-    public class ResponseEventArgs : EventArgs
-    {
-        public string Response { get; private set; }
 
-        public ResponseEventArgs(string response)
-        {
-            Response = response;
-        }
+
+    public class OneStringEventArgs : EventArgs
+    {
+        public String s { get; private set; }
+        public OneStringEventArgs(String name) => this.s = name;
+
     }
 
     public class SlobsPipeService : ISlobsService
@@ -68,9 +67,12 @@ namespace SLOBSharp.Domain.Services
         private StreamReader _reader;
         private StreamWriter _writer;
 
-        public delegate void SubscriptionResponseReadedHandler(ResponseEventArgs eventArgs);
-        public event SubscriptionResponseReadedHandler SubscriptionResponseReaded;
-
+        
+        public event EventHandler<OneStringEventArgs> subscriptionEvt;
+        /*
+        public delegate void SubscriptionResponseReadedHandler(OneStringEventArgs eventArgs);
+        public event SubscriptionResponseReadedHandler subscriptionEvt;
+        */
         public void InitSubscriptionPipe()
         {
             //if( _pipe != null)
@@ -143,7 +145,7 @@ namespace SLOBSharp.Domain.Services
                 
                 if (!String.IsNullOrEmpty(response))
                 {
-                    SubscriptionResponseReaded?.Invoke(new ResponseEventArgs(response));
+                    subscriptionEvt?.Invoke(this, new OneStringEventArgs(response));
                 }
                 else
                 {
@@ -162,7 +164,7 @@ namespace SLOBSharp.Domain.Services
 
                 if (!String.IsNullOrEmpty(response))
                 {
-                    SubscriptionResponseReaded?.Invoke(new ResponseEventArgs(response));
+                    subscriptionEvt?.Invoke(this, new OneStringEventArgs(response));
                 }
             }
 
@@ -478,8 +480,10 @@ namespace SLOBSharp.Domain.Services
         }
 
         //FIXME!!!
-        public async Task<Boolean> IsWarmingUpConnectionSucceeded()
+        public async Task<Boolean> TryConnecting()
         {
+            Tracer.Trace($"WARMING UP FREAKIN CONNECTION");
+
             using (var pipe = new NamedPipeClientStream(this.pipeName))
             {
                 //await Task.Delay(50);

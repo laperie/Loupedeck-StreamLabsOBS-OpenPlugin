@@ -93,7 +93,7 @@ namespace SLOBSharp.Client
         /// </summary>
         void DisposeSubscriptionPipe();
 
-        event SlobsPipeService.SubscriptionResponseReadedHandler SubscriptionResponseReaded;
+        event EventHandler<OneStringEventArgs> subscriptionEvt;
 
         #endregion
     }
@@ -105,7 +105,8 @@ namespace SLOBSharp.Client
         internal SlobsClient(ISlobsService slobsService)
         {
             this.slobsService = slobsService;
-            slobsService.SubscriptionResponseReaded += (response)=> SubscriptionResponseReaded(response);
+            //Fixme: this construction looks like a hack. Need to be refactored.
+            slobsService.subscriptionEvt += (sender, args) => subscriptionEvt?.Invoke(sender, args);
         }
 
         public static ISlobsClient NewPipeClient() => new SlobsPipeClient();
@@ -132,9 +133,10 @@ namespace SLOBSharp.Client
             return await this.slobsService.ExecuteRequestAsync(request).ConfigureAwait(false);
         }
 
-        public async Task<Boolean> IsWarmingUpConnectionSucceeded()
+        public Boolean TryConnecting()
         {
-            return await this.slobsService.IsWarmingUpConnectionSucceeded(); 
+            var result = Task.Run(async () => await this.slobsService.TryConnecting()).Result;
+            return result;
         }
 
         /// <summary>
@@ -177,7 +179,9 @@ namespace SLOBSharp.Client
             return await this.slobsService.ExecuteRequestsAsync(requests).ConfigureAwait(false);
         }
 
-        public event SlobsPipeService.SubscriptionResponseReadedHandler SubscriptionResponseReaded;
+        public event EventHandler<OneStringEventArgs> subscriptionEvt;
+
+        //public event SlobsPipeService.SubscriptionResponseReadedHandler SubscriptionResponseReaded;
 
         public void InitSubscriptionPipe()
         {

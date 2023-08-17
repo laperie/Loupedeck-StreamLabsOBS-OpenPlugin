@@ -1,14 +1,41 @@
 ﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
+    using static Loupedeck.StreamlabsPlugin.AppProxy;
 
     internal class IntParamArgs : EventArgs
     {
-        public IntParamArgs(Int32 v) => this.State = v;
+        public IntParamArgs(Int32 v) => this.Value = v;
 
-        public Int32 State { get; set; }
+        public Int32 Value { get; set; }
     }
 
+    internal class BoolParamArgs : EventArgs
+    {
+        public BoolParamArgs(Boolean v) => this.Value = v;
+
+        public Boolean Value { get; set; }
+    }
+
+    internal class RecordingStateArgs: EventArgs
+    {
+        public RecordingStateArgs(StreamlabsRecordingStatus v) => this.Value = v;
+
+        public StreamlabsRecordingStatus Value { get; set; }
+    }
+    internal class StreamingStateArgs : EventArgs
+    {
+        public StreamingStateArgs(StreamlabsStreamingStatus v) => this.Value = v;
+
+        public StreamlabsStreamingStatus Value { get; set; }
+    }
+    internal class ReplayBufferEventArgs : EventArgs
+    {
+        public ReplayBufferEventArgs(StreamlabsReplayBufferStatus v) => this.Value = v;
+
+        public StreamlabsReplayBufferStatus Value { get; set; }
+    }
+    
     internal class MuteEventArgs : EventArgs
     {
         public String SourceName;

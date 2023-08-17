@@ -1,80 +1,95 @@
 ﻿namespace Loupedeck.StreamlabsPlugin
 {
+
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
 
     using SLOBSharp.Client;
+    using SLOBSharp.Client.Requests;
     using SLOBSharp.Client.Responses;
     using SLOBSharp.Domain.Services;
+    using SLOBSharp.Client.Responses;
+    using Newtonsoft.Json.Linq;
+
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
     /// https://github.com/obsproject/obs-websocket/blob/4.x-compat/docs/generated/protocol.md
     /// </summary>
-    internal partial class AppProxy: SlobsPipeClient
-    {
-        // Our 'own' events
-        public event EventHandler<EventArgs> AppConnected;
-        public event EventHandler<EventArgs> AppDisconnected;
+    internal partial class AppProxy : SlobsPipeClient
+{
+    // Our 'own' events
+    public event EventHandler<EventArgs> AppConnected;
+    public event EventHandler<EventArgs> AppDisconnected;
 
-        //Events coming from SLOBS
-        public event EventHandler<EventArgs> Connected;
-        public event EventHandler<EventArgs> Disconnected;
-        
+    //Events coming from SLOBS
+    public event EventHandler<EventArgs> Connected;
+    public event EventHandler<EventArgs> Disconnected;
 
-        public Boolean IsConnected;
 
-        public Plugin Plugin { get; private set; }
+    public Boolean IsConnected;
 
-        // Properties
-        public Boolean IsAppConnected => this.IsConnected;
+    public Plugin Plugin { get; private set; }
 
-        // Folders to select from when we try saving screenshots
-        public static readonly Environment.SpecialFolder[] ScreenshotFolders =
-            {                
+    // Properties
+    public Boolean IsAppConnected => this.IsConnected;
+
+    // Folders to select from when we try saving screenshots
+    public static readonly Environment.SpecialFolder[] ScreenshotFolders =
+        {
                 Environment.SpecialFolder.MyPictures,
                 Environment.SpecialFolder.MyDocuments,
                 Environment.SpecialFolder.Personal,
                 Environment.SpecialFolder.CommonPictures
             };
 
-        public AppProxy(Plugin _plugin):base("slobs")
-        {
-            this.Plugin = _plugin;
+    public AppProxy(Plugin _plugin) : base("slobs")
+    {
+        this.Plugin = _plugin;
 
-            // Trying to set screenshot save-to path
-            for(var i=0; (i< ScreenshotFolders.Length) && String.IsNullOrEmpty(AppProxy.ScreenshotsSavingPath); i++)
+        // Trying to set screenshot save-to path
+        for (var i = 0; (i < ScreenshotFolders.Length) && String.IsNullOrEmpty(AppProxy.ScreenshotsSavingPath); i++)
+        {
+            var folder = Environment.GetFolderPath(ScreenshotFolders[i]);
+            if (Directory.Exists(folder))
             {
-                var folder = Environment.GetFolderPath(ScreenshotFolders[i]);
-                if (Directory.Exists(folder))
-                {
-                    AppProxy.ScreenshotsSavingPath = folder;
-                }
+                AppProxy.ScreenshotsSavingPath = folder;
             }
-
-            
-        }
-        public void RegisterAppEvents()
-        {
-            //Mapping OBS Websocket events to ours
-            //this.Connected += this.OnAppConnected;
-            //this.Disconnected += this.OnAppDisconnected;
         }
 
-        public void UnregisterAppEvents()
-        {
-            //Unmapping OBS Websocket events 
-            //this.Connected -= this.OnAppConnected;
-            //this.Disconnected -= this.OnAppDisconnected;
-            
-        }
 
-        public void Connect()
+    }
+    public void RegisterAppEvents()
+    {
+        this.subscriptionEvt += this.OnStreamlabsEvent;
+        this.InitSubscriptionOnEvents();
+    }
+
+    public void UnregisterAppEvents()
+    {
+        this.subscriptionEvt -= this.OnStreamlabsEvent;
+    }
+
+
+    // Note, now we just try connecting -- later on it should be some simple status transaction to see wheher app is up and running
+    public void Connect()
+    {
+        var response = this.TryConnecting();
+        if (response)
         {
-            var response = this.IsWarmingUpConnectionSucceeded().ConfigureAwait(false);
+            this.Plugin.Log.Info("Invoke Appconnected");
+            //Just calling Connected event handler directly 
+            this.OnAppConnected(this, EventArgs.Empty);
         }
+        else
+        {
+            this.Plugin.Log.Info("Not Connected");
+        }
+    }
 
 #if false
         private Boolean _scene_collection_events_subscribed = false;
@@ -127,83 +142,122 @@
                 this._scene_collection_events_subscribed = false;
             }
         }
+#endif
 
-        internal void InitializeObsData(Object sender, EventArgs e)
+    internal void InitializeObsData(Object sender, EventArgs e)
+    {
+
+        // Retreiving current streaming and recording statuses
         {
-            // NOTE: This can throw! Exception handling is done OUTSIDE of this method
-            var streamingStatus = this.GetStreamingStatus();
-            var vcamstatus = this.GetVirtualCamStatus();
-            var studioModeStatus = this.StudioModeEnabled();
+            var result = this.ExecuteSlobsMethodSync("getModel", "StreamingService");
+            this._currentStreamingState = result.Result.FirstOrDefault();
 
-            // Retreiving Audio types.
-            this.OnAppConnected_RetreiveSourceTypes();
+        }
+        if (this._currentStreamingState == null)
+        {
+            this.Plugin.Log.Info("Cannot retreive streaming status!");
+        }
 
-            if (streamingStatus != null)
-            {
-                this._currentStreamingState = streamingStatus.IsStreaming ? OBSWebsocketDotNet.Types.OutputState.Started : OBSWebsocketDotNet.Types.OutputState.Stopped;
+        this.Plugin.Log.Info($"Current streaming status: {this._currentStreamingState}");
 
-                this.OnObsRecordingStateChange(this, streamingStatus.IsRecording ? OBSWebsocketDotNet.Types.OutputState.Started : OBSWebsocketDotNet.Types.OutputState.Stopped);
-                this.OnObsStreamingStateChange(this, streamingStatus.IsStreaming ? OBSWebsocketDotNet.Types.OutputState.Started : OBSWebsocketDotNet.Types.OutputState.Stopped);
-            }
+        // Retreiving Audio types.
+        #if false
+        this.OnAppConnected_RetreiveSourceTypes();
+        #endif
 
-            if (vcamstatus != null && vcamstatus.IsActive)
-            {
-                this.OnObsVirtualCameraStarted(sender, e);
-            }
-            else
-            {
-                this.OnObsVirtualCameraStopped(sender, e);
-            }
+        if (this.GetCurrentStreamingStatus()!=StreamlabsStreamingStatus.NONE)
+        {
+            this.OnObsStreamingStateChange(this, new StreamingStateArgs(this.GetCurrentStreamingStatus()));
+        }
 
-            this.OnObsStudioModeStateChange(sender, studioModeStatus);
+        if (this.GetCurrentRecordingStatus() != StreamlabsRecordingStatus.NONE)
+        {
+            this.OnObsRecordingStateChange(this, new RecordingStateArgs(this.GetCurrentRecordingStatus()));
+        }
 
+        //Retreiving current studio mode status
+        try
+        {
+            var result = this.ExecuteSlobsMethodSync("getModel", "TransitionsService");
+            //FIXME, this looks suspicious [although it works]
+            dynamic jobject = JObject.Parse(result.JsonResponse);
+            this.Plugin.Log.Info($"Retreived studio mode: {(Boolean)jobject.result.studioMode}");
+            this.OnObsStudioModeStateChange(sender, new BoolParamArgs((Boolean)jobject.result.studioMode));
+        } 
+        catch (Exception ex)
+        {
+            this.Plugin.Log.Error(ex, "Cannot retreive studio mode status!");
+        }
+
+
+
+#if false
+        if (vcamstatus != null && vcamstatus.IsActive)
+        {
+            this.OnObsVirtualCameraStarted(sender, e);
+        }
+        else
+        {
+            this.OnObsVirtualCameraStopped(sender, e);
+        }
+#endif
             this.Plugin.Log.Info("Init: OnObsSceneCollectionListChanged");
 
+#if false
             this.OnObsSceneCollectionListChanged(sender, new OldNewStringChangeEventArgs("",""));
 
             this.Plugin.Log.Info("Init: OnObsSceneCollectionChanged");
             // This should initiate retreiving of all data
             // to indicate that we need to force rescan of all scenes and all first parameter is null 
             this.OnObsSceneCollectionChanged(null , e);
-        }
+#endif
+    }
 
-        private void OnAppConnected(Object sender, EventArgs e)
-        {
-            this.Plugin.Log.Info("Entering AppConnected");
+    private void OnAppConnected(Object sender, EventArgs e)
+    {
+        this.Plugin.Log.Info("Entering AppConnected");
 
-            // Subscribing to App events
-            // Notifying all subscribers on App Connected
-            // Fetching initial states for controls
-            this.RecordingStateChanged += this.OnObsRecordingStateChange;
-            this.RecordingPaused += this.OnObsRecordPaused;
-            this.RecordingResumed += this.OnObsRecordResumed;
-            this.StreamingStateChanged += this.OnObsStreamingStateChange;
-            this.VirtualCameraStarted += this.OnObsVirtualCameraStarted;
-            this.VirtualCameraStopped += this.OnObsVirtualCameraStopped;
-            this.StudioModeSwitched += this.OnObsStudioModeStateChange;
-            this.ReplayBufferStateChanged += this.OnObsReplayBufferStateChange;
+        this.IsConnected = true;
 
+        // Subscribing to App events
+        // In obs we called that in OnLoad
+        this.RegisterAppEvents();
+        // Notifying all subscribers on App Connected
+        // Fetching initial states for controls
+
+        this.RecordingStateChanged += this.OnObsRecordingStateChange;
+        this.RecordingPaused += this.OnObsRecordPaused;
+        this.RecordingResumed += this.OnObsRecordResumed;
+        this.StreamingStateChanged += this.OnObsStreamingStateChange;
+        this.StudioModeSwitched += this.OnObsStudioModeStateChange;
+        this.ReplayBufferStateChanged += this.OnObsReplayBufferStateChange;
+#if false
+            this.TransitionEnd += this.OnObsTransitionEnd;
             this.SceneCollectionListChanged += this.OnObsSceneCollectionListChanged;
             this.SceneCollectionChanged += this.OnObsSceneCollectionChanged;
-
-            this.TransitionEnd += this.OnObsTransitionEnd;
-
+            this.VirtualCameraStarted += this.OnObsVirtualCameraStarted;
+            this.VirtualCameraStopped += this.OnObsVirtualCameraStopped;
+            
+#endif
             this.AppConnected?.Invoke(sender, e);
 
-            this.Plugin.Log.Info("AppConnected: Initializing data");
-            _ = Helpers.TryExecuteSafe(() =>
-            {
-                this.InitializeObsData(sender, e);
-            });
-
+        this.Plugin.Log.Info("AppConnected: Initializing data");
+        _ = Helpers.TryExecuteSafe(() =>
+        {
+            this.InitializeObsData(sender, e);
+        });
+#if false
             // Subscribing to all the events that are depenendent on Scene Collection change
             this._scene_collection_events_subscribed = true;
             this.SubscribeToSceneCollectionEvents();
-        }
+#endif
 
-        private void OnAppDisconnected(Object sender, EventArgs e)
-        {
-            this.Plugin.Log.Info("Entering AppDisconnected");
+    }
+
+    private void OnAppDisconnected(Object sender, EventArgs e)
+    {
+        this.Plugin.Log.Info("Entering AppDisconnected");
+
 
             // Unsubscribing from App events here
             this.RecordingStateChanged -= this.OnObsRecordingStateChange;
@@ -211,22 +265,27 @@
             this.RecordingResumed -= this.OnObsRecordResumed;
 
             this.StreamingStateChanged -= this.OnObsStreamingStateChange;
+            this.StudioModeSwitched -= this.OnObsStudioModeStateChange;
+            this.ReplayBufferStateChanged -= this.OnObsReplayBufferStateChange;
+
+#if false
             this.VirtualCameraStarted -= this.OnObsVirtualCameraStarted;
             this.VirtualCameraStopped -= this.OnObsVirtualCameraStopped;
-            this.StudioModeSwitched -= this.OnObsStudioModeStateChange;
-
             this.SceneCollectionListChanged -= this.OnObsSceneCollectionListChanged;
             this.SceneCollectionChanged -= this.OnObsSceneCollectionChanged;
 
             this.TransitionEnd -= this.OnObsTransitionEnd;
-
-            // Unsubscribing from all the events that are depenendent on Scene Collection change
             this._scene_collection_events_subscribed = false;
             this.UnsubscribeFromSceneCollectionEvents();
 
-            this.AppDisconnected?.Invoke(sender, e);
-        }
+#endif
+            // Unsubscribing from all the events that are depenendent on Scene Collection change
+            this.UnregisterAppEvents();
+        this.AppDisconnected?.Invoke(sender, e);
+    }
 
+
+#if false
         internal Boolean TryConvertLegacyActionParamToKey(String actionParameter, out SceneItemKey key)
         {
             //Sample action parameter: 9|Background|BRB
@@ -242,15 +301,107 @@
             return key != null;
         }
 #endif
-        private void SafeRunConnected(Action action, String warning)
+    private void SafeRunConnected(Action action, String warning)
+    {
+        if (this.IsAppConnected)
         {
-            if (this.IsAppConnected)
+            if (!Helpers.TryExecuteSafe(action))
             {
-                if (!Helpers.TryExecuteSafe(action))
-                {
-                    this.Plugin.Log.Warning(warning);
-                }
+                this.Plugin.Log.Warning(warning);
             }
         }
     }
+    /*****************************/
+//SOME MASSAGING OF SLOBS DATA. NEEDS TO BE MOVED TO THE RIGHT PLACE 
+    private static Int32 _rpc_messageId = 0;
+    private static ISlobsRequest PrepareRequest(String methodName, String serviceName, Boolean compactMode, Object[] parameters)
+    {
+        var slobsRequest = SlobsRequestBuilder.NewRequest()
+            .SetRequestId(AppProxy._rpc_messageId++.ToString())
+            .SetMethod(methodName)
+            .SetResource(serviceName)
+            .SetCompactMode(compactMode);
+
+        if (parameters != null && parameters.Any())
+        {
+            slobsRequest.AddArgs(parameters);
+        }
+
+        return slobsRequest.BuildRequest();
+    }
+
+    public SlobsRpcResponse ExecuteSlobsMethodSync(String methodName, String serviceName, Boolean compactMode = false, params Object[] parameters)
+    {
+        ISlobsRequest request = PrepareRequest(methodName, serviceName, compactMode, parameters);
+
+        return this.ExecuteRequest(request);
+    }
+
+    public async Task<SlobsRpcResponse> ExecuteSlobsMethod(String methodName, String serviceName, Boolean compactMode = false, params Object[] parameters)
+    {
+        ISlobsRequest request = PrepareRequest(methodName, serviceName, compactMode, parameters);
+
+        var response = await this.ExecuteRequestAsync(request).ConfigureAwait(false);
+
+        return response;
+    }
+
+    public enum StreamlabsStreamingStatus
+    {
+        Live,
+        Offline,
+        Starting,
+        Reconnecting,
+        Ending,
+        NONE
+    };
+    public enum StreamlabsRecordingStatus
+    {
+        Recording,
+        Offline,
+        Starting,
+        Stopping,
+        NONE
+    };
+    public enum StreamlabsReplayBufferStatus
+    {
+        Offline,
+        Running,
+        Saving,
+        Stopping,
+        NONE
+    };
+
+    private SlobsResult _currentStreamingState = null;
+
+    private static readonly Dictionary<String, StreamlabsStreamingStatus> _streamingStatusDictionary = new Dictionary<String, StreamlabsStreamingStatus> 
+    {   {"live", StreamlabsStreamingStatus.Live},
+        {"offline", StreamlabsStreamingStatus.Offline},
+        {"starting", StreamlabsStreamingStatus.Starting},
+        {"reconnecting", StreamlabsStreamingStatus.Reconnecting},
+        {"ending", StreamlabsStreamingStatus.Ending}
+    };
+    private static readonly Dictionary<String, StreamlabsRecordingStatus> _recordingStatusDictionary = new Dictionary<String, StreamlabsRecordingStatus>
+    {
+        { "recording", StreamlabsRecordingStatus.Recording },
+        { "offline", StreamlabsRecordingStatus.Offline },
+        { "starting", StreamlabsRecordingStatus.Starting },
+        { "stopping", StreamlabsRecordingStatus.Stopping }
+    };
+    private static readonly Dictionary<String, StreamlabsReplayBufferStatus> _replayBufferStatusDictionary = new Dictionary<String, StreamlabsReplayBufferStatus>
+    {
+        {"running", StreamlabsReplayBufferStatus.Running },
+        {"offline", StreamlabsReplayBufferStatus.Offline },
+        {"saving", StreamlabsReplayBufferStatus.Saving },
+        {"stopping", StreamlabsReplayBufferStatus.Stopping }
+    };
+
+/*
+StreamlabsReplayBufferStatus GetCurrentReplayBufferStatus() => this._currentSlobsState != null && _replayBufferStatusDictionary.ContainsKey(this._currentSlobsState.ReplayBufferStatus) ? _replayBufferStatusDictionary[_currentSlobsState.ReplayBufferStatus] : StreamlabsReplayBufferStatus.NONE;
+
+        */
+    public StreamlabsStreamingStatus GetCurrentStreamingStatus() => this._currentStreamingState != null && _streamingStatusDictionary.ContainsKey(this._currentStreamingState.StreamingStatus) ? _streamingStatusDictionary[this._currentStreamingState.StreamingStatus] : StreamlabsStreamingStatus.NONE;
+    public StreamlabsRecordingStatus GetCurrentRecordingStatus() => this._currentStreamingState != null && _recordingStatusDictionary.ContainsKey(this._currentStreamingState.RecordingStatus) ? _recordingStatusDictionary[this._currentStreamingState.RecordingStatus] : StreamlabsRecordingStatus.NONE;
+
+   }
 }

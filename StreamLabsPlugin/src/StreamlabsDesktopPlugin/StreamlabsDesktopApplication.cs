@@ -84,7 +84,7 @@
                 return null;
             }
 
-            var dirs = allApps?.Where(x => x.Contains("OBS") && !x.ContainsNoCase("Streamlabs "));
+            var dirs = allApps?.Where(x => x.Contains("OBS") && x.ContainsNoCase("Streamlabs "));
 
             return dirs?.ToList<String>();
         }
