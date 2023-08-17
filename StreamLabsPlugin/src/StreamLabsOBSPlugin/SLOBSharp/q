@@ -1,0 +1,11 @@
+SLOBS/Client/Requests/Scenes/SlobsGetActiveSceneRequest.cs
+SLOBS/Client/Requests/SlobsParameters.cs
+SLOBS/Client/Requests/SlobsRequest.cs
+SLOBS/Client/Requests/SlobsRequestBuilder.cs
+SLOBS/Client/Responses/SlobsRpcResponse.cs
+SLOBS/Client/SlobsClient.cs
+SLOBS/Client/SlobsPipeClient.cs
+SLOBS/Domain/Extensions/StringExtensions.cs
+SLOBS/Domain/Mapping/SingleOrArrayConverter.cs
+SLOBS/Domain/Services/SlobsPipeService.cs
+
