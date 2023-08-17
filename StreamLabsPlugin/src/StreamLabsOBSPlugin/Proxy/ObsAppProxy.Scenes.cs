@@ -1,10 +1,7 @@
-namespace Loupedeck.SLOBS
+namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
-
-    using OBSWebsocketDotNet;
-    using OBSWebsocketDotNet.Types;
 
     internal class LDSceneItem
     {
@@ -16,12 +13,12 @@ namespace Loupedeck.SLOBS
     {
         public String Name { get; private set; }
         public  List<LDSceneItem> Items { get; private set; } 
-        public Scene(OBSScene scene)
+    /*    public Scene(OBSScene scene)
         {
             this.Name = scene.Name;
             this.Items = scene.Items.ConvertAll(x => new LDSceneItem(x.SourceName));
         }
-
+    */
         public Scene()
         {
             this.Name = "";
@@ -69,16 +66,16 @@ namespace Loupedeck.SLOBS
                 {
                     if (this._studioMode)
                     {
-                        this.SetPreviewScene(newScene);
+                        //this.SetPreviewScene(newScene);
                     }
                     else
                     {
-                        this.SetCurrentScene(newScene);
+                        //this.SetCurrentScene(newScene);
                     }
                 });
             }
         }
-
+#if false
         private void OnObsSceneListChanged(Object sender, EventArgs e)
         {
             // Rescan the scene list
@@ -171,6 +168,6 @@ namespace Loupedeck.SLOBS
                 this.Plugin.Log.Info($"OnObsSceneChanged to {newScene} ignoring in Studio mode");
             }
         }
-        
+#endif        
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
@@ -22,93 +22,7 @@
         private readonly Dictionary<String, String> _specialSources = new Dictionary<String, String>();
         private readonly List<String> _audioSourceTypes = new List<String>();
 
-        internal Dictionary<String, AudioSourceDescriptor> CurrentAudioSources { get; private set; }  = new Dictionary<String, AudioSourceDescriptor>();
-
-        private Boolean IsAudioSourceType(OBSWebsocketDotNet.Types.SourceSettings settings) => this._audioSourceTypes.Contains(settings.SourceKind ?? settings.SourceType);
-
-        private void OnObsSourceAudioActivated(OBSWebsocket sender, String sourceName)
-        {
-            // NOTE: We do not testSettings (type of the source) -> It's audio for sure!
-            if (this.AddCurrentAudioSource(sourceName, false, false))
-            {
-                this.AppSourceCreated?.InvokeMethod(sourceName);
-            }
-        }
-
-        // NOTE: See if we need to do anything regarding
-        private void OnObsSourceAudioDeactivated(OBSWebsocket sender, String sourceName) => this.OnObsSourceDestroyed(sender, sourceName, "", "");
-
-        /// <summary>
-        /// Adds a source to CurrentAudioSources list
-        /// </summary>
-        /// <param name="sourceName">Name of the source</param>
-        /// <param name="testAudio">Test if source has audio active</param>
-        /// <returns>True if source is added</returns>
-        private Boolean AddCurrentAudioSource(String sourceName, Boolean testSettings = true, Boolean testAudio = true)
-        {
-            if ( Helpers.TryExecuteFunc(
-                        () => (!testSettings || this.IsAudioSourceType(this.GetSourceSettings(sourceName)))
-                                                 && (!testAudio || this.GetAudioActive(sourceName)), out var good) && good)
-            {
-                this.CurrentAudioSources[sourceName] = new AudioSourceDescriptor(sourceName, this);
-                this.Plugin.Log.Info($"Adding Regular audio source {sourceName}");
-                return true;
-            }
-            return false;
-        }
-
-        private void OnObsSourceCreated(OBSWebsocket sender, OBSWebsocketDotNet.Types.SourceSettings settings)
-        {
-            // Check if we should care
-            if (this.IsAudioSourceType(settings))
-            {
-                if (this.AddCurrentAudioSource(settings.SourceName, false, true))
-                {
-                    this.AppSourceCreated?.Invoke(this, new SourceNameEventArgs(settings.SourceName));
-                }
-            }
-        }
-
-        private void OnObsSourceDestroyed(OBSWebsocket sender, String sourceName, String sourceType, String sourceKind)
-        {
-            if (this.CurrentAudioSources.ContainsKey(sourceName))
-            {
-                this.CurrentAudioSources.Remove(sourceName);
-                this.AppSourceDestroyed?.Invoke(this, new SourceNameEventArgs(sourceName));
-            }
-            else
-            {
-                this.Plugin.Log.Warning($"SourceDestroyed: Source {sourceName} is not found in audioSources");
-            }
-        }
-
-        private void OnObsSourceVolumeChanged(OBSWebsocket sender, OBSWebsocketDotNet.Types.SourceVolume volDesc)
-        {
-            if (this.CurrentAudioSources.ContainsKey(volDesc.SourceName))
-            {
-                this.CurrentAudioSources[volDesc.SourceName].Volume = volDesc.VolumeDb;
-                this.AppEvtSourceVolumeChanged?.Invoke(sender, new VolumeEventArgs(volDesc.SourceName, volDesc.Volume, volDesc.VolumeDb));
-            }
-            else
-            {
-                this.Plugin.Log.Warning($"Cannot update volume of {volDesc?.SourceName} --not present in current sources");
-            }
-        }
-
-        private void OnObsSourceMuteStateChanged(OBSWebsocket sender, String sourceName, Boolean isMuted)
-        {
-            if (this.CurrentAudioSources.ContainsKey(sourceName))
-            {
-                this.CurrentAudioSources[sourceName].Muted = isMuted;
-                this.AppEvtSourceMuteStateChanged?.Invoke(sender, new MuteEventArgs(sourceName, isMuted));
-                this.Plugin.Log.Info($"OBS: OnObsSourceMuteStateChanged Source '{sourceName}' is muted '{isMuted}'");
-            }
-            else
-            {
-                this.Plugin.Log.Warning($"Cannot update mute status. Source {sourceName} not in current sources");
-            }
-        }
-
+        internal Dictionary<String, AudioSourceDescriptor> CurrentAudioSources { get; private set; } = new Dictionary<String, AudioSourceDescriptor>();
         // NOTE: We are NOT going to OBS for mute and volume, using cached value instead -- This is for LD UI
         internal Boolean AppGetMute(String sourceName) =>
             this.IsAppConnected && this.CurrentAudioSources.ContainsKey(sourceName) && this.CurrentAudioSources[sourceName].Muted;
@@ -121,7 +35,7 @@
                 try
                 {
                     var mute = this.AppGetMute(sourceName);
-                    this.SetMute(sourceName, !mute);
+                    //this.SetMute(sourceName, !mute);
                     this.Plugin.Log.Info($"OBS: Setting mute to source '{sourceName}' to '{!mute}'");
                 }
                 catch (Exception ex)
@@ -160,7 +74,7 @@
                
                 current = (Single)(current < MinVolumeDB ? MinVolumeDB : (current > MaxVolumeDB ? MaxVolumeDB : current));
 
-                this.SetVolume(sourceName, current, true);
+                //this.SetVolume(sourceName, current, true);
             }
             catch (Exception ex)
             {
@@ -174,6 +88,94 @@
             return (this.IsAppConnected && !String.IsNullOrEmpty(sourceName) && this.CurrentAudioSources.ContainsKey(sourceName)) 
                   ? this.GetVolumePercent(sourceName).ToString("0.")
                   : "N/A";
+        }
+
+#if false
+        
+
+        private Boolean IsAudioSourceType(OBSWebsocketDotNet.Types.SourceSettings settings) => this._audioSourceTypes.Contains(settings.SourceKind ?? settings.SourceType);
+
+        private void OnObsSourceAudioActivated(Object sender, String sourceName)
+        {
+            // NOTE: We do not testSettings (type of the source) -> It's audio for sure!
+            if (this.AddCurrentAudioSource(sourceName, false, false))
+            {
+                this.AppSourceCreated?.InvokeMethod(sourceName);
+            }
+        }
+
+        // NOTE: See if we need to do anything regarding
+        private void OnObsSourceAudioDeactivated(Object sender, String sourceName) => this.OnObsSourceDestroyed(sender, sourceName, "", "");
+
+        /// <summary>
+        /// Adds a source to CurrentAudioSources list
+        /// </summary>
+        /// <param name="sourceName">Name of the source</param>
+        /// <param name="testAudio">Test if source has audio active</param>
+        /// <returns>True if source is added</returns>
+        private Boolean AddCurrentAudioSource(String sourceName, Boolean testSettings = true, Boolean testAudio = true)
+        {
+            if ( Helpers.TryExecuteFunc(
+                        () => (!testSettings || this.IsAudioSourceType(this.GetSourceSettings(sourceName)))
+                                                 && (!testAudio || this.GetAudioActive(sourceName)), out var good) && good)
+            {
+                this.CurrentAudioSources[sourceName] = new AudioSourceDescriptor(sourceName, this);
+                this.Plugin.Log.Info($"Adding Regular audio source {sourceName}");
+                return true;
+            }
+            return false;
+        }
+
+        private void OnObsSourceCreated(Object sender, OBSWebsocketDotNet.Types.SourceSettings settings)
+        {
+            // Check if we should care
+            if (this.IsAudioSourceType(settings))
+            {
+                if (this.AddCurrentAudioSource(settings.SourceName, false, true))
+                {
+                    this.AppSourceCreated?.Invoke(this, new SourceNameEventArgs(settings.SourceName));
+                }
+            }
+        }
+
+        private void OnObsSourceDestroyed(Object sender, String sourceName, String sourceType, String sourceKind)
+        {
+            if (this.CurrentAudioSources.ContainsKey(sourceName))
+            {
+                this.CurrentAudioSources.Remove(sourceName);
+                this.AppSourceDestroyed?.Invoke(this, new SourceNameEventArgs(sourceName));
+            }
+            else
+            {
+                this.Plugin.Log.Warning($"SourceDestroyed: Source {sourceName} is not found in audioSources");
+            }
+        }
+
+        private void OnObsSourceVolumeChanged(Object sender, OBSWebsocketDotNet.Types.SourceVolume volDesc)
+        {
+            if (this.CurrentAudioSources.ContainsKey(volDesc.SourceName))
+            {
+                this.CurrentAudioSources[volDesc.SourceName].Volume = volDesc.VolumeDb;
+                this.AppEvtSourceVolumeChanged?.Invoke(sender, new VolumeEventArgs(volDesc.SourceName, volDesc.Volume, volDesc.VolumeDb));
+            }
+            else
+            {
+                this.Plugin.Log.Warning($"Cannot update volume of {volDesc?.SourceName} --not present in current sources");
+            }
+        }
+
+        private void OnObsSourceMuteStateChanged(Object sender, String sourceName, Boolean isMuted)
+        {
+            if (this.CurrentAudioSources.ContainsKey(sourceName))
+            {
+                this.CurrentAudioSources[sourceName].Muted = isMuted;
+                this.AppEvtSourceMuteStateChanged?.Invoke(sender, new MuteEventArgs(sourceName, isMuted));
+                this.Plugin.Log.Info($"OBS: OnObsSourceMuteStateChanged Source '{sourceName}' is muted '{isMuted}'");
+            }
+            else
+            {
+                this.Plugin.Log.Warning($"Cannot update mute status. Source {sourceName} not in current sources");
+            }
         }
 
 
@@ -222,5 +224,6 @@
                 this.Plugin.Log.Error($"OnObsSceneCollectionChanged_RetreiveAudioSources: Exception '{ex.Message}' when retreiving list of sources from current scene collection!");
             }
         }
+#endif
     }
 }

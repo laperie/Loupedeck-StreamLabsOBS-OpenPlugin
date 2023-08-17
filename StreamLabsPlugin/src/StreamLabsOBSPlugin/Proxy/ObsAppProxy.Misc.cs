@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
@@ -24,8 +24,8 @@
 
                     //Generate unique filename 
                     var filename = System.IO.Path.Combine(ObsAppProxy.ScreenshotsSavingPath, "Screenshot-" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".png");
-//                    var resp = this.TakeSourceScreenshot((String)currentScene, null, filename, -1, -1);
-                    this.Plugin.Log.Info($"Screenshot taken and saved to {resp.ImageFile}");
+                    //var resp = this.TakeSourceScreenshot((String)currentScene, null, filename, -1, -1);
+                    //this.Plugin.Log.Info($"Screenshot taken and saved to {resp.ImageFile}");
                 }
                 catch (Exception ex)
                 {

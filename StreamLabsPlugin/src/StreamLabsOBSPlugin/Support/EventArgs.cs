@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
 
@@ -60,7 +60,7 @@
 
     internal class SourceNameEventArgs: EventArgs
     {
-        public String SourceName;
+        public String SourceName { get; private set; }
         public SourceNameEventArgs(String name) => this.SourceName = name;
 
     }

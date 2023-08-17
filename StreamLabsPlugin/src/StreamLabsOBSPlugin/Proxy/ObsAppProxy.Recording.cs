@@ -1,9 +1,6 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
-    using System.Collections.Generic;
-
-    using OBSWebsocketDotNet;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -31,6 +28,13 @@
 
         public void AppResumeRecording() => this.SafeRunConnected(() => this.ResumeRecording(), "Cannot resume recording");
 
+        private void StartRecording() { }
+        private void StopRecording() { }
+        private void ToggleRecording() { }
+        private void PauseRecording() { }
+        private void ResumeRecording() { }
+        private void ToggleRecordingPause() { } 
+
         private void OnObsRecordPaused(Object sender, EventArgs e)
         {
             this.IsRecordingPaused = true;
@@ -42,7 +46,7 @@
             this.IsRecordingPaused = false;
             this.AppEvtRecordingResumed?.Invoke(sender, e);
         }
-
+#if false
         // FIXME: Provide customized images for starting/started... -- For that, create special event handler on Action side.
         private void OnObsRecordingStateChange(OBSWebsocket sender, OBSWebsocketDotNet.Types.OutputState newState)
         {
@@ -76,5 +80,6 @@
                 this.PauseRecording();
             }
         }
+#endif
     }
 }

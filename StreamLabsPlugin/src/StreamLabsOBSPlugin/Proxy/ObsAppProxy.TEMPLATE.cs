@@ -1,9 +1,7 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
-
-    using OBSWebsocketDotNet;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see

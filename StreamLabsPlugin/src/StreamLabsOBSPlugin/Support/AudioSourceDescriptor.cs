@@ -1,7 +1,6 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
-    using OBSWebsocketDotNet;
 
     internal class AudioSourceDescriptor
     {
@@ -9,7 +8,7 @@
         public Boolean Muted;
         public Single Volume;
 
-        public AudioSourceDescriptor(String name, OBSWebsocket that, Boolean isSpecSource = false)
+        public AudioSourceDescriptor(String name, Object that, Boolean isSpecSource = false)
         {
             this.Muted = false;
             this.Volume = 0;
@@ -17,9 +16,9 @@
 
             try
             {   /*NB. All volume in decibels!*/
-                var v = that.GetVolume(name,true);
-                this.Muted = v.Muted;
-                this.Volume = v.Volume;
+                var v = 0.0F;                //that.GetVolume(name,true);
+                this.Muted = false; // v.Muted;
+                this.Volume = v; //v.Volume;
             }
             catch (Exception ex)
             {

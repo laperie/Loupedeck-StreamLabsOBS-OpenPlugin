@@ -1,9 +1,6 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
-    using System.Collections.Generic;
-
-    using OBSWebsocketDotNet;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -32,6 +29,12 @@
                 }
             }
         }
+
+        private void SaveReplayBuffer() {}
+        private void  ToggleReplayBuffer() {}
+        private void StopReplayBuffer() { }
+        private void StartReplayBuffer() { }
+#if false
         private void OnObsReplayBufferStateChange(OBSWebsocket sender, OBSWebsocketDotNet.Types.OutputState newState)
         {
             this.Plugin.Log.Info($"OBS Replay buffer state change, new state {newState}");
@@ -45,6 +48,6 @@
                 this.AppEvtReplayBufferOff?.Invoke(this, new EventArgs());
             }
         }
-
+#endif
     }
 }

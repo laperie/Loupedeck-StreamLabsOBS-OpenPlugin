@@ -1,4 +1,4 @@
-namespace Loupedeck.SLOBS
+namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
@@ -18,13 +18,16 @@ namespace Loupedeck.SLOBS
         // Gets a value indicating whether this is an API-only plugin.
         public override Boolean HasNoApplication => true;
 
-        private readonly ObsConnector _connector;
+        //private readonly ObsConnector _connector;
 
         public ObsStudioPlugin()
         {
             ObsStudioPlugin.Proxy = new ObsAppProxy(this);
-            this._connector = new ObsConnector(ObsStudioPlugin.Proxy, this.GetPluginDataDirectory(),
+            ObsStudioPlugin.Proxy.Connect();
+
+/*            this._connector = new ObsConnector(ObsStudioPlugin.Proxy, this.GetPluginDataDirectory(),
                                 (Object sender, EventArgs e) => this.OnPluginStatusChanged(Loupedeck.PluginStatus.Warning, this.Localization.GetString("Connecting to OBS"), "https://support.loupedeck.com/obs-guide", ""));
+*/
         }
 
         // Load is called once as plugin is being initialized during service start.
@@ -46,7 +49,7 @@ namespace Loupedeck.SLOBS
 
             ObsStudioPlugin.Proxy.RegisterAppEvents(); 
 
-            this._connector.Start();
+            //this._connector.Start();
 
             this.Update_PluginStatus();
         }
@@ -54,7 +57,7 @@ namespace Loupedeck.SLOBS
         // Unload is called once when plugin is being unloaded.
         public override void Unload()
         {
-            this._connector.Stop();
+            //this._connector.Stop();
             ObsStudioPlugin.Proxy.UnregisterAppEvents();
 
             this.OnApplicationStopped(this, null);
@@ -76,6 +79,7 @@ namespace Loupedeck.SLOBS
 
         private void OnApplicationStarted(Object sender, EventArgs e)
         {
+                //We will initalize SLOBS API HERE!
         }
 
         private void OnApplicationStopped(Object sender, EventArgs e)

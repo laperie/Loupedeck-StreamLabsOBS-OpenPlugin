@@ -1,9 +1,8 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
-    
-    using OBSWebsocketDotNet;
+
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -39,7 +38,7 @@
                 try
                 {
                     var item = this.AllSceneItems[key];
-                    this.SetSourceRender(item.SourceName, forceState ? newState : !item.Visible, item.SceneName);
+                    //this.SetSourceRender(item.SourceName, forceState ? newState : !item.Visible, item.SceneName);
                 }
                 catch (Exception ex)
                 {
@@ -47,6 +46,7 @@
                 }
             }
         }
+#if false
         private void OnObsSceneItemVisibilityChanged(OBSWebsocket sender, String sceneName, String itemName, Boolean isVisible)
         {
             var key = SceneItemKey.Encode(this.CurrentSceneCollection, sceneName, itemName);
@@ -127,6 +127,6 @@
                 this.Plugin.Log.Warning($"Cannot find item {itemName} in scene {sceneName}");
             }
         }
-
+#endif
     }
 }

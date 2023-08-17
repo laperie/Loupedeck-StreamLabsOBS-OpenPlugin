@@ -1,10 +1,9 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
-    using System.Web.UI.WebControls;
+    
 
-    using OBSWebsocketDotNet;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -28,15 +27,16 @@
 
                 this.Plugin.Log.Info($"Switching to Scene Collection {newCollection}");
 
-                this.UnsubscribeFromSceneCollectionEvents();
+                //this.UnsubscribeFromSceneCollectionEvents();
 
-                Helpers.TryExecuteSafe(() => this.SetCurrentSceneCollection(newCollection));
+                //Helpers.TryExecuteSafe(() => this.SetCurrentSceneCollection(newCollection));
             }
         }
 
         //While AllSceneItems is a flat list indexed y string key, this one is the list of lists for scene, 
         //To be used in the SourceVisibility processing 
         public Dictionary<String, List<Tuple<String, String>>> ScenesWithItems { get; private set; } = new Dictionary<String, List<Tuple<String, String>>>();
+#if false
         private void OnObsSceneCollectionListChanged(Object sender, EventArgs args)
         {
             this.Plugin.Log.Info("OBS SceneCollectionList changed");
@@ -137,5 +137,6 @@
 
             }
         }
+#endif
     }
 }

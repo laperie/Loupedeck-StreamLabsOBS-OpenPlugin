@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
 
@@ -17,6 +17,10 @@
         public void AppStartVirtualCam() => this.SafeRunConnected(() => this.StartVirtualCam(), "Cannot start virtual cam");
 
         public void AppStopVirtualCam() => this.SafeRunConnected(() => this.StopVirtualCam(), "Cannot stop virtual cam");
+
+        void StartVirtualCam() { }
+        void StopVirtualCam() { }
+        void ToggleVirtualCam() { }
 
         private void OnObsVirtualCameraStarted(Object sender, EventArgs e)
         {

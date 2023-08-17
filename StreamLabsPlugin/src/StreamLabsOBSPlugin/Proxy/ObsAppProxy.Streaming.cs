@@ -1,9 +1,7 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
-    using System.Collections.Generic;
-
-    using OBSWebsocketDotNet;
+   
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -39,8 +37,17 @@
                 this.SafeRunConnected(() => this.StopStreaming(), "Cannot stop streaming");
             }
         }
+
+        void StartStreaming() { }
+        void StopStreaming() { }
+        void ToggleStreaming() { }
+
+
+
+        private Boolean StreamingStateChangeIsInProgress() => false; //this._currentStreamingState == OBSWebsocketDotNet.Types.OutputState.Starting || this._currentStreamingState == OBSWebsocketDotNet.Types.OutputState.Stopping;
+#if false
         private OBSWebsocketDotNet.Types.OutputState _currentStreamingState = OBSWebsocketDotNet.Types.OutputState.Stopped;
-        private Boolean StreamingStateChangeIsInProgress() => this._currentStreamingState == OBSWebsocketDotNet.Types.OutputState.Starting || this._currentStreamingState == OBSWebsocketDotNet.Types.OutputState.Stopping;
+        
 
         private void OnObsStreamingStateChange(OBSWebsocket sender, OBSWebsocketDotNet.Types.OutputState newState)
         {
@@ -57,6 +64,6 @@
                 this.AppEvtStreamingOff?.Invoke(this, new EventArgs());
             }
         }
-
+#endif
     }
 }

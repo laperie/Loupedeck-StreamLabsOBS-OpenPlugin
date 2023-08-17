@@ -1,9 +1,7 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
-
-    using OBSWebsocketDotNet;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -20,7 +18,7 @@
         {
             if (this.IsAppConnected && this._studioMode)
             {
-                if (Helpers.TryExecuteSafe(() => this.TransitionToProgram()))
+                if (Helpers.TryExecuteSafe(() => true /* this.TransitionToProgram()*/))
                 {
                     this.Plugin.Log.Info("Transition executed successfully");
                 }
@@ -36,6 +34,12 @@
         public void AppStartStudioMode() => this.SafeRunConnected(() => this.EnableStudioMode(), "Cannot start studio mode");
 
         public void AppStopStudioMode() => this.SafeRunConnected(() => this.DisableStudioMode(), "Cannot stop studio mode");
+
+        void ToggleStudioMode() { }
+        void EnableStudioMode() { }
+        void DisableStudioMode() { }
+
+
         // Caching studio mode
         private Boolean _studioMode = false;
 

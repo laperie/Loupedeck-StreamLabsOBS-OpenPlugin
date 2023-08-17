@@ -1,18 +1,30 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Runtime.CompilerServices;
+
+    using SLOBSharp.Client;
+    using SLOBSharp.Client.Responses;
+    using SLOBSharp.Domain.Services;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
     /// https://github.com/obsproject/obs-websocket/blob/4.x-compat/docs/generated/protocol.md
     /// </summary>
-    internal partial class ObsAppProxy : OBSWebsocketDotNet.OBSWebsocket
+    internal partial class ObsAppProxy: SlobsPipeClient
     {
         // Our 'own' events
         public event EventHandler<EventArgs> AppConnected;
         public event EventHandler<EventArgs> AppDisconnected;
+
+        //Events coming from SLOBS
+        public event EventHandler<EventArgs> Connected;
+        public event EventHandler<EventArgs> Disconnected;
+        
+
+        public Boolean IsConnected;
 
         public Plugin Plugin { get; private set; }
 
@@ -28,7 +40,7 @@
                 Environment.SpecialFolder.CommonPictures
             };
 
-        public ObsAppProxy(Plugin _plugin)
+        public ObsAppProxy(Plugin _plugin):base("slobs")
         {
             this.Plugin = _plugin;
 
@@ -41,25 +53,35 @@
                     ObsAppProxy.ScreenshotsSavingPath = folder;
                 }
             }
+
+            
         }
         public void RegisterAppEvents()
         {
             //Mapping OBS Websocket events to ours
-            this.Connected += this.OnAppConnected;
-            this.Disconnected += this.OnAppDisconnected;
+            //this.Connected += this.OnAppConnected;
+            //this.Disconnected += this.OnAppDisconnected;
         }
 
         public void UnregisterAppEvents()
         {
             //Unmapping OBS Websocket events 
-            this.Connected -= this.OnAppConnected;
-            this.Disconnected -= this.OnAppDisconnected;
+            //this.Connected -= this.OnAppConnected;
+            //this.Disconnected -= this.OnAppDisconnected;
+            
         }
 
+        public void Connect()
+        {
+            var response = this.IsWarmingUpConnectionSucceeded().ConfigureAwait(false);
+        }
+
+#if false
         private Boolean _scene_collection_events_subscribed = false;
 
         private void UnsubscribeFromSceneCollectionEvents()
         {
+            
             if (!this._scene_collection_events_subscribed)
             {
                 this.SceneListChanged -= this.OnObsSceneListChanged;
@@ -219,8 +241,8 @@
 
             return key != null;
         }
-
-        private void SafeRunConnected(Action action, String warning) 
+#endif
+        private void SafeRunConnected(Action action, String warning)
         {
             if (this.IsAppConnected)
             {

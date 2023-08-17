@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.SLOBS
+﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
 
@@ -22,11 +22,15 @@
         /// <param name="in_props">properties</param>
         /// <param name="in_details">details</param>
         /// <returns></returns>
-        public static SceneItemDescriptor CreateSourceDictItem(String in_collection, String in_sceneName, LDSceneItem in_sceneItem, OBSWebsocketDotNet.OBSWebsocket obs, OBSWebsocketDotNet.Types.SceneItemDetails in_details = null)
+        public static SceneItemDescriptor CreateSourceDictItem(String in_collection, String in_sceneName, LDSceneItem in_sceneItem, Object obs, Object in_details = null)
+        {
+            return null;
+        }
+#if false
         {
             try
             {
-                var props = obs.GetSceneItemProperties(in_sceneItem.SourceName, in_sceneName);
+                var props = null; obs.GetSceneItemProperties(in_sceneItem.SourceName, in_sceneName);*/
                 var details = in_details;
 
                 if (details == null)
@@ -62,7 +66,7 @@
 
             return null;
         }
-
+#endif
         protected SceneItemDescriptor(String coll, String scene, String sourceName, Boolean visible)
         {
             this.CollectionName = coll;

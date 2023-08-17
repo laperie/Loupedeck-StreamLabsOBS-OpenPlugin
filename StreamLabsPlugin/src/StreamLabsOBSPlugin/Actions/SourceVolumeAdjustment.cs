@@ -1,4 +1,4 @@
-﻿namespace Loupedeck.SLOBS.Actions
+﻿namespace Loupedeck.StreamlabsPlugin.Actions
 {
     using System;
     using System.Collections.Generic;
