@@ -20,8 +20,8 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("2901B5AB-3114-490D-B938-83AE31CAC564")]
-
+// [assembly: Guid("F4D11CD1-EB85-4EDD-9B9A-975CB2A43412")] 
+[assembly: Guid("ddd70205-90c0-4f95-8295-bfd1369a09eb")] // This is original Streamlabs Plugin GUID
 // Version information for an assembly consists of the following four values:
 //
 //      Major Version
@@ -32,4 +32,4 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("5.4.0.20000")]
+//[assembly: AssemblyVersion("5.4.0.20000")]

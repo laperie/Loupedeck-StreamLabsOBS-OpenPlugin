@@ -39,9 +39,6 @@
     <OutputPath>..\..\bin\win\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AutoMapper, Version=8.1.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\packages\AutoMapper.8.1.0\lib\net461\AutoMapper.dll</HintPath>
-    </Reference>
     <Reference Include="LoupedeckShared">
       <HintPath>..\..\..\..\..\Program Files (x86)\Loupedeck\Loupedeck2\LoupedeckShared.dll</HintPath>
       <Private>False</Private>
@@ -104,16 +101,16 @@
     <Compile Include="Support\SceneKey.cs" />
     <Compile Include="Support\SceneItemKey.cs" />
     <Compile Include="Support\SceneItemDescriptor.cs" />
-    <Compile Include="SLOBSharp\Client\Requests\Scenes/SlobsGetActiveSceneRequest.cs"/>
-    <Compile Include="SLOBSharp\Client\Requests\SlobsParameters.cs"/>
-    <Compile Include="SLOBSharp\Client\Requests\SlobsRequest.cs"/>
-    <Compile Include="SLOBSharp\Client\Requests\SlobsRequestBuilder.cs"/>
-    <Compile Include="SLOBSharp\Client\Responses\SlobsRpcResponse.cs"/>
-    <Compile Include="SLOBSharp\Client\SlobsClient.cs"/>
-    <Compile Include="SLOBSharp\Client\SlobsPipeClient.cs"/>
-    <Compile Include="SLOBSharp\Domain\Extensions/StringExtensions.cs"/>
-    <Compile Include="SLOBSharp\Domain\Mapping\SingleOrArrayConverter.cs"/>
-    <Compile Include="SLOBSharp\Domain\Services\SlobsPipeService.cs"/>
+    <Compile Include="SLOBSharp\Client\Requests\Scenes/SlobsGetActiveSceneRequest.cs" />
+    <Compile Include="SLOBSharp\Client\Requests\SlobsParameters.cs" />
+    <Compile Include="SLOBSharp\Client\Requests\SlobsRequest.cs" />
+    <Compile Include="SLOBSharp\Client\Requests\SlobsRequestBuilder.cs" />
+    <Compile Include="SLOBSharp\Client\Responses\SlobsRpcResponse.cs" />
+    <Compile Include="SLOBSharp\Client\SlobsClient.cs" />
+    <Compile Include="SLOBSharp\Client\SlobsPipeClient.cs" />
+    <Compile Include="SLOBSharp\Domain\Extensions/StringExtensions.cs" />
+    <Compile Include="SLOBSharp\Domain\Mapping\SingleOrArrayConverter.cs" />
+    <Compile Include="SLOBSharp\Domain\Services\SlobsPipeService.cs" />
     <None Include="Support\Support.TEMPLATE.cs" />
   </ItemGroup>
   <ItemGroup>

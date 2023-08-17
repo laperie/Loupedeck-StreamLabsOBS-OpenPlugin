@@ -6,13 +6,13 @@
     using System.IO;
     using System.Linq;
 
-    public class ObsStudioApplication : ClientApplication
+    public class StreamlabsApplication : ClientApplication
     {
         protected override String GetProcessName() => "obs64";
 
         protected override String GetBundleName() => "com.obsproject.obs-studio";
 
-        public ObsStudioApplication()
+        public StreamlabsApplication()
         {
         }
 
@@ -24,7 +24,7 @@
             }
 
             // exclude false call when Streamlabs OBS starts (it contains obs64 process too)
-            return Process.GetProcessesByName("Streamlabs OBS").Length == 0;
+            return Process.GetProcessesByName("Streamlabs Desktop").Length == 0;
         }
 
         /// <summary>

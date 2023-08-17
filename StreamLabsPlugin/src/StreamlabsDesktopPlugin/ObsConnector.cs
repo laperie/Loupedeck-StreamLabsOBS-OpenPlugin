@@ -27,7 +27,7 @@ namespace Loupedeck.StreamlabsPlugin
     using System.Threading;
     using System.Threading.Tasks;
 
-    using OBSWebsocketDotNet;
+    //using OBSWebsocketDotNet;
 
     /// <summary>
     /// OBS conneection monitoring class, counterpart of Loupedeck OBS plugin

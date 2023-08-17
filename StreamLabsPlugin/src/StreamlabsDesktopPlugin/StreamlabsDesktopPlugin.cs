@@ -8,7 +8,7 @@ namespace Loupedeck.StreamlabsPlugin
 
     // This class contains the plugin-level logic of the Loupedeck plugin.
 
-     partial class StreamlabsPlugin : Plugin
+    public class StreamlabsPlugin : Plugin
     {
         internal static AppProxy Proxy { get; private set; } 
 
@@ -90,7 +90,7 @@ namespace Loupedeck.StreamlabsPlugin
         {
             if (!this.IsApplicationInstalled())
             {
-                this.OnPluginStatusChanged(Loupedeck.PluginStatus.Error, "OBS Studio is not installed", "https://support.loupedeck.com/obs-guide", "more details");
+                this.OnPluginStatusChanged(Loupedeck.PluginStatus.Error, "Streamlabs Desktop is not installed", "https://support.loupedeck.com/streamlabs-guide", "more details");
             }
             else if (StreamlabsPlugin.Proxy.IsAppConnected)
             {
@@ -98,7 +98,7 @@ namespace Loupedeck.StreamlabsPlugin
             }
             else
             {
-                this.OnPluginStatusChanged(Loupedeck.PluginStatus.Warning, "Not connected to OBS", "https://support.loupedeck.com/obs-guide", "more details");
+                this.OnPluginStatusChanged(Loupedeck.PluginStatus.Warning, "Not connected to Streamlabs Desktop", "https://support.loupedeck.com/streamlabs-guide", "more details");
             }
         }
 
