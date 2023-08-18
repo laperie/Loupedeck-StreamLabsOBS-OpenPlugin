@@ -46,7 +46,7 @@
         private void StopReplayBuffer() => this.ExecuteSlobsMethodSync("stopReplayBuffer", Constants.StreamingService);
         private void StartReplayBuffer() => this.ExecuteSlobsMethodSync("startReplayBuffer", Constants.StreamingService);
 
-        private StreamlabsReplayBufferStatus _currentReplayBuferStatus = StreamlabsReplayBufferStatus.NONE;
+        private StreamlabsReplayBufferStatus _currentReplayBuferStatus = StreamlabsReplayBufferStatus.Offline; //Note, this might not be correct but works most of the time
         private void OnObsReplayBufferStateChange(Object sender, ReplayBufferEventArgs arg)
         {
             this._currentReplayBuferStatus = arg.Value;
