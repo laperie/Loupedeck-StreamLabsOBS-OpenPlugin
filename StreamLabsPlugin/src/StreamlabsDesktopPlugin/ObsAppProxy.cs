@@ -175,7 +175,12 @@
             this.OnObsRecordingStateChange(this, new RecordingStateArgs(this.GetCurrentRecordingStatus()));
         }
 
-        //Retreiving current studio mode status
+        if (this.GetCurrentReplayBufferStatus() != StreamlabsReplayBufferStatus.NONE)
+        {
+            this.OnObsReplayBufferStateChange(this, new ReplayBufferEventArgs(this.GetCurrentReplayBufferStatus()));
+        }
+
+            //Retreiving current studio mode status
         try
         {
             var result = this.ExecuteSlobsMethodSync("getModel", "TransitionsService");
@@ -345,63 +350,7 @@
 
         return response;
     }
-
-    public enum StreamlabsStreamingStatus
-    {
-        Live,
-        Offline,
-        Starting,
-        Reconnecting,
-        Ending,
-        NONE
-    };
-    public enum StreamlabsRecordingStatus
-    {
-        Recording,
-        Offline,
-        Starting,
-        Stopping,
-        NONE
-    };
-    public enum StreamlabsReplayBufferStatus
-    {
-        Offline,
-        Running,
-        Saving,
-        Stopping,
-        NONE
-    };
-
+    //Combined status with Recording, Streaming and Replay Buffer
     private SlobsResult _currentStreamingState = null;
-
-    private static readonly Dictionary<String, StreamlabsStreamingStatus> _streamingStatusDictionary = new Dictionary<String, StreamlabsStreamingStatus> 
-    {   {"live", StreamlabsStreamingStatus.Live},
-        {"offline", StreamlabsStreamingStatus.Offline},
-        {"starting", StreamlabsStreamingStatus.Starting},
-        {"reconnecting", StreamlabsStreamingStatus.Reconnecting},
-        {"ending", StreamlabsStreamingStatus.Ending}
-    };
-    private static readonly Dictionary<String, StreamlabsRecordingStatus> _recordingStatusDictionary = new Dictionary<String, StreamlabsRecordingStatus>
-    {
-        { "recording", StreamlabsRecordingStatus.Recording },
-        { "offline", StreamlabsRecordingStatus.Offline },
-        { "starting", StreamlabsRecordingStatus.Starting },
-        { "stopping", StreamlabsRecordingStatus.Stopping }
-    };
-    private static readonly Dictionary<String, StreamlabsReplayBufferStatus> _replayBufferStatusDictionary = new Dictionary<String, StreamlabsReplayBufferStatus>
-    {
-        {"running", StreamlabsReplayBufferStatus.Running },
-        {"offline", StreamlabsReplayBufferStatus.Offline },
-        {"saving", StreamlabsReplayBufferStatus.Saving },
-        {"stopping", StreamlabsReplayBufferStatus.Stopping }
-    };
-
-/*
-StreamlabsReplayBufferStatus GetCurrentReplayBufferStatus() => this._currentSlobsState != null && _replayBufferStatusDictionary.ContainsKey(this._currentSlobsState.ReplayBufferStatus) ? _replayBufferStatusDictionary[_currentSlobsState.ReplayBufferStatus] : StreamlabsReplayBufferStatus.NONE;
-
-        */
-    public StreamlabsStreamingStatus GetCurrentStreamingStatus() => this._currentStreamingState != null && _streamingStatusDictionary.ContainsKey(this._currentStreamingState.StreamingStatus) ? _streamingStatusDictionary[this._currentStreamingState.StreamingStatus] : StreamlabsStreamingStatus.NONE;
-    public StreamlabsRecordingStatus GetCurrentRecordingStatus() => this._currentStreamingState != null && _recordingStatusDictionary.ContainsKey(this._currentStreamingState.RecordingStatus) ? _recordingStatusDictionary[this._currentStreamingState.RecordingStatus] : StreamlabsRecordingStatus.NONE;
-
    }
 }
