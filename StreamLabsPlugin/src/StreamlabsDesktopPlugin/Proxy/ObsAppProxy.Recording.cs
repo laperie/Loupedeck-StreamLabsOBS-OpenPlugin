@@ -1,6 +1,7 @@
 ﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -13,6 +14,26 @@
         public event EventHandler<EventArgs> AppEvtRecordingResumed;
         public event EventHandler<EventArgs> AppEvtRecordingPaused;
         public event EventHandler<IntParamArgs> AppEvtRecordingStateChange;
+
+
+        public enum StreamlabsRecordingStatus
+        {
+            Recording,
+            Offline,
+            Starting,
+            Stopping,
+            NONE
+        };
+
+        private static readonly Dictionary<String, StreamlabsRecordingStatus> _recordingStatusDictionary = new Dictionary<String, StreamlabsRecordingStatus>
+        {
+            { "recording", StreamlabsRecordingStatus.Recording },
+            { "offline", StreamlabsRecordingStatus.Offline },
+            { "starting", StreamlabsRecordingStatus.Starting },
+            { "stopping", StreamlabsRecordingStatus.Stopping }
+        };
+
+        public StreamlabsRecordingStatus GetCurrentRecordingStatus() => this._currentStreamingState != null && _recordingStatusDictionary.ContainsKey(this._currentStreamingState.RecordingStatus) ? _recordingStatusDictionary[this._currentStreamingState.RecordingStatus] : StreamlabsRecordingStatus.NONE;
 
         public Boolean InRecording { get; private set; } = false;
 

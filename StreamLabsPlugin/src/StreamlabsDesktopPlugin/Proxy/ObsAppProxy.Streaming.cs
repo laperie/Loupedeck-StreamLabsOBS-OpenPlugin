@@ -1,6 +1,7 @@
 ﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
+    using System.Collections.Generic;
 
     using SLOBSharp.Client.Responses;
 
@@ -15,6 +16,26 @@
         public event EventHandler<EventArgs> AppEvtStreamingOn;
 
         public event EventHandler<EventArgs> AppEvtStreamingOff;
+
+        public enum StreamlabsStreamingStatus
+        {
+            Live,
+            Offline,
+            Starting,
+            Reconnecting,
+            Ending,
+            NONE
+        };
+
+        private static readonly Dictionary<String, StreamlabsStreamingStatus> _streamingStatusDictionary = new Dictionary<String, StreamlabsStreamingStatus>
+        {   {"live", StreamlabsStreamingStatus.Live},
+            {"offline", StreamlabsStreamingStatus.Offline},
+            {"starting", StreamlabsStreamingStatus.Starting},
+            {"reconnecting", StreamlabsStreamingStatus.Reconnecting},
+            {"ending", StreamlabsStreamingStatus.Ending}
+        };
+
+        public StreamlabsStreamingStatus GetCurrentStreamingStatus() => this._currentStreamingState != null && _streamingStatusDictionary.ContainsKey(this._currentStreamingState.StreamingStatus) ? _streamingStatusDictionary[this._currentStreamingState.StreamingStatus] : StreamlabsStreamingStatus.NONE;
 
         public void AppToggleStreaming()
         { 
