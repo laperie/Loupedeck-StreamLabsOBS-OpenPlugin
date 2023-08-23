@@ -19,14 +19,15 @@
 
         protected override void ConnectAppEvents(EventHandler<EventArgs> eventSwitchedOff, EventHandler<EventArgs> eventSwitchedOn)
         {
-            StreamlabsPlugin.Proxy.AppEvtReplayBufferOff += eventSwitchedOff;
-            StreamlabsPlugin.Proxy.AppEvtReplayBufferOn += eventSwitchedOn;
+            /*Note the states are crossed On->Off,  see other toggles for reference*/
+            StreamlabsPlugin.Proxy.AppEvtReplayBufferOn += eventSwitchedOff;
+            StreamlabsPlugin.Proxy.AppEvtReplayBufferOff += eventSwitchedOn;
         }
 
         protected override void DisconnectAppEvents(EventHandler<EventArgs> eventSwitchedOff, EventHandler<EventArgs> eventSwitchedOn)
         {
-            StreamlabsPlugin.Proxy.AppEvtReplayBufferOff -= eventSwitchedOff;
-            StreamlabsPlugin.Proxy.AppEvtReplayBufferOn -= eventSwitchedOn;
+            StreamlabsPlugin.Proxy.AppEvtReplayBufferOn -= eventSwitchedOff;
+            StreamlabsPlugin.Proxy.AppEvtReplayBufferOff -= eventSwitchedOn;
         }
 
         protected override void RunCommand(TwoStateCommand command)
