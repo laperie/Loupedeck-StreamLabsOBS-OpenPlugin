@@ -1,6 +1,7 @@
 ﻿namespace Loupedeck.StreamlabsPlugin
 {
     using System;
+    using System.Collections.Generic;
 
     /// <summary>
     /// Proxy to OBS websocket server, for API reference see
@@ -12,7 +13,26 @@
 
         public event EventHandler<EventArgs> AppEvtReplayBufferOff;
 
-        
+
+        public enum StreamlabsReplayBufferStatus
+        {
+            Offline,
+            Running,
+            Saving,
+            Stopping,
+            NONE
+        };
+
+        private static readonly Dictionary<String, StreamlabsReplayBufferStatus> _replayBufferStatusDictionary = new Dictionary<String, StreamlabsReplayBufferStatus>
+        {
+            {"running", StreamlabsReplayBufferStatus.Running },
+            {"offline", StreamlabsReplayBufferStatus.Offline },
+            {"saving", StreamlabsReplayBufferStatus.Saving },
+            {"stopping", StreamlabsReplayBufferStatus.Stopping }
+        };
+
+        public StreamlabsReplayBufferStatus GetCurrentReplayBufferStatus() => this._currentStreamingState != null && _replayBufferStatusDictionary.ContainsKey(this._currentStreamingState.ReplayBufferStatus) ? _replayBufferStatusDictionary[this._currentStreamingState.ReplayBufferStatus] : StreamlabsReplayBufferStatus.NONE;
+
         public void AppToggleReplayBuffer() => this.SafeRunConnected(() => this.ToggleReplayBuffer(), "Cannot toggle Replay Buffer");
 
         public void AppStartReplayBuffer() => this.SafeRunConnected(() => this.StartReplayBuffer(), "Cannot start Replay Buffer");

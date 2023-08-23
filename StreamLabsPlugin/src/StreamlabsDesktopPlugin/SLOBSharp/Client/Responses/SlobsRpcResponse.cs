@@ -159,6 +159,9 @@ namespace SLOBSharp.Client.Responses
         [JsonProperty("type")]
         public string ResultType { get; set; }
 
+        [JsonProperty("replayBufferStatus")]
+        public string ReplayBufferStatus { get; set; }
+
         [JsonProperty("sourceId")]
         public string SourceId { get; set; }
 
