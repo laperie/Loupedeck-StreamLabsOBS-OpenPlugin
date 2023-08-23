@@ -16,7 +16,7 @@
             : base(false)
         {
             this.DisplayName = "Volume Mixer";
-            this.Description = "Controls the volume of the audio sources in OBS Studio";
+            this.Description = "Controls the volume of the audio sources in Streamlabs Desktop";
             this.GroupName = "3. Audio";
         }
 

@@ -10,7 +10,7 @@
 
         public SceneCollectionSelectCommand()
         {
-            this.Description = "Switches to a specific Scene Collection in OBS Studio";
+            this.Description = "Switches to a specific Scene Collection in Streamlabs Desktop";
             this.GroupName = "4. Scene Collections";
 
             _ = this.AddState("Unselected", "Scene collection unselected");

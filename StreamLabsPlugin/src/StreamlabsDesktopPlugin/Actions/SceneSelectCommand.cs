@@ -11,7 +11,7 @@
 
         public SceneSelectCommand()
         {
-            this.Description = "Switches to a specific scene in OBS Studio";
+            this.Description = "Switches to a specific scene in Streamlabs Desktop";
             this.GroupName = "1. Scenes";
             _ = this.AddState("Unselected", "Scene unselected");
             _ = this.AddState("Selected", "Scene selected");

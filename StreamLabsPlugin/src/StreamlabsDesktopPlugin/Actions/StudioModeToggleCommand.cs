@@ -8,7 +8,7 @@
                   : base(
                       name: "StudioMode",
                       displayName: "Studio Mode Toggle",
-                      description: "Switches the OBS Studio Mode on/off, allowing you to change and edit Scenes in the background",
+                      description: "Switches the Streamlabs Desktop on/off, allowing you to change and edit Scenes in the background",
                       groupName: "",
                       offStateName: "Enable Studio Mode",
                       onStateName: "Disable Studio Mode",

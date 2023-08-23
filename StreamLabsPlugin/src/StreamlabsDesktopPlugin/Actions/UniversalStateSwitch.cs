@@ -27,7 +27,7 @@
             this.GroupName = "";
 
             this.ActionEditor.AddControl(
-                new ActionEditorListbox(name: ToggleActionSelector, labelText: "OBS toggle:"));
+                new ActionEditorListbox(name: ToggleActionSelector, labelText: "Streamlabs toggle:"));
             
             this.ActionEditor.AddControl(
                 new ActionEditorListbox(name: ToggleStateSelector, labelText: "Set to state:"));

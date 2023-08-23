@@ -9,7 +9,7 @@
                   : base(
                       name: "VirtualCam",
                       displayName: "Virtual Camera Toggle",
-                      description: "Switches the OBS Virtual Camera on/off",
+                      description: "Switches the Virtual Camera on/off",
                       groupName: "",
                       offStateName: "Start Virtual Camera",
                       onStateName: "Stop Virtual Camera",

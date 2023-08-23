@@ -9,7 +9,7 @@
                      : base(
                          name: "ToggleStreaming",
                          displayName: "Streaming Toggle",
-                         description: "Starts/Stops a livestream in OBS Studio",
+                         description: "Starts/Stops a livestream in Streamlabs Desktop",
                          groupName: "",
                          offStateName: "Start streaming",
                          onStateName: "Stop streaming",
