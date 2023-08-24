@@ -27,16 +27,16 @@
 
                 this.Plugin.Log.Info($"Switching to Scene Collection {newCollection}");
 
-                //this.UnsubscribeFromSceneCollectionEvents();
+                this.UnsubscribeFromSceneCollectionEvents();
 
-                //Helpers.TryExecuteSafe(() => this.SetCurrentSceneCollection(newCollection));
+                Helpers.TryExecuteSafe(() => this.SetCurrentSceneCollection(newCollection));
             }
         }
 
         //While AllSceneItems is a flat list indexed y string key, this one is the list of lists for scene, 
         //To be used in the SourceVisibility processing 
         public Dictionary<String, List<Tuple<String, String>>> ScenesWithItems { get; private set; } = new Dictionary<String, List<Tuple<String, String>>>();
-#if false
+
         private void OnObsSceneCollectionListChanged(Object sender, EventArgs args)
         {
             this.Plugin.Log.Info("OBS SceneCollectionList changed");
@@ -129,14 +129,13 @@
                         this.Plugin.Log.Warning($"Cannot get SceneItemList for scene {scene.Name}");
                     }
                 }
-
-                if(itemsList.Count > 0)
+                if (itemsList.Count > 0)
                 {
                     this.ScenesWithItems.Add(scene.Name, itemsList);
                 }
 
             }
         }
-#endif
+
     }
 }

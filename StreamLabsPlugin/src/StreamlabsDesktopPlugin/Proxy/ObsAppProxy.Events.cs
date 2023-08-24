@@ -3,7 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net.NetworkInformation;
+    using System.Web.UI.WebControls;
+    using System.Xml.Linq;
+
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     using SLOBSharp.Client.Requests;
     using SLOBSharp.Client.Responses;
@@ -16,41 +21,6 @@
 
     public static class Constants
     {
-        public const String img_name_stream_starting = "Streaming/STREAM_StreamStartingYellow.png";
-        public const String img_name_stream_started = "Streaming/STREAM_StopStreamingRed.png";
-        public const String img_name_stream_stopping = "Streaming/STREAM_StreamStartingYellow.png";
-        public const String img_name_stream_stopped = "Streaming/STREAM_StartStreamingGreen.png";
-
-        public const String img_name_rec_starting = "Streaming/STREAM_Starting-Stopping.png";
-        public const String img_name_rec_started = "Streaming/STREAM_ToggleRecord1.png";
-        public const String img_name_rec_stopping = "Streaming/STREAM_Starting-Stopping.png";
-        public const String img_name_rec_stopped = "Streaming/STREAM_ToggleRecord2.png";
-
-        public const String img_name_active_scene = "Streaming/SceneOn.png";
-        public const String img_name_inactive_scene = "Streaming/SceneOff.png";
-
-        public const String img_name_active_source = "Streaming/SourceOn.png";
-        public const String img_name_inactive_source = "Streaming/SourceOff.png";
-
-        public const String img_name_studio_mode_enable = "Streaming/STREAM_EnableStudioMode.png";
-        public const String img_name_studio_mode_disable = "Streaming/STREAM_DisableStudioMode2.png";
-
-        public const String img_name_start_replay_buffer = "Streaming/STREAM_StartReplayBuffer.png";
-        public const String img_name_stop_replay_buffer = "Streaming/STREAM_StopReplayBuffer.png";
-
-        public const String img_name_software_not_found = "Streaming/SoftwareNotFound.png";
-
-        public const String img_name_streaming_audio_on = "Streaming/AudioOn.png";
-        public const String img_name_streaming_audio_off = "Streaming/AudioOff.png";
-
-        public const String streamlabs_process_name = "Streamlabs OBS";
-        public const String streamlabs_is_not_running = "Streamlabs is not running";
-
-        public const String dynamic_scenes = "DynamicScenes";
-        public const String dynamic_sources = "DynamicSources";
-
-        public const String dynamic_mixers = "DynamicMixers";
-        public const String reset_dynamic_mixers = "ResetDynamicMixers";
 
         public const String toggle_streaming = "ToggleStreaming";
         public const String toggle_recording = "ToggleRecording";
@@ -79,6 +49,9 @@
         public const String ReplayBufferStatusChanged = "StreamingService.replayBufferStatusChange";
 
         public const String СollectionSwitched = "SceneCollectionsService.collectionSwitched";
+        public const String СollectionAdded = "SceneCollectionsService.collectionAdded";
+        public const String СollectionRemoved = "SceneCollectionsService.collectionRemoved";
+        public const String СollectionUpdated = "SceneCollectionsService.collectionUpdated";
 
         public const String StudioModeChanged = "TransitionsService.studioModeChanged";
 
@@ -92,6 +65,7 @@
         public const String SceneCollectionsService = "SceneCollectionsService";
         public const String RecentEventsService = "RecentEventsService";
         public const String GameOverlayService = "GameOverlayService";
+        public const String VirtualWebcamService = "VirtualWebcamService";
 
         public const String get_model = "getModel";
         public const String active_scene = "activeScene";
@@ -110,6 +84,7 @@
         public const String STREAM = "STREAM";
         public const String PROMISE = "PROMISE";
         public const String SUBSCRIPTION = "SUBSCRIPTION";
+
     }
 
     internal partial class AppProxy
@@ -138,6 +113,8 @@
 
             this.Plugin.Log.Info($"SL:  Streamlabs: responseListener == null: {this.responseListener == null}, responseListener.IsRunning: {isrunning}");
 
+            this.UnSubscribeFromKnownEvents();  
+
             if (this.responseListener != null)
             {
                 this.responseListener.Dispose();
@@ -153,107 +130,51 @@
             this.DisposeSubscriptionPipe();
         }
 
-        private void SubscribeToKnownEvents()
+        private static List<String> SubscribedEvents = new List<String>()
         {
-            var sceneSwitched = GetJsonRequest("sceneSwitched", Constants.ScenesService);
-            var sceneAdded = GetJsonRequest("sceneAdded", Constants.ScenesService);
-            var sceneRemoved = GetJsonRequest("sceneRemoved", Constants.ScenesService);
+            Constants.SceneSwitched,
+            Constants.SceneAdded,
+            Constants.SceneRemoved,
+            Constants.ItemAdded,
+            Constants.ItemRemoved,
+            Constants.ItemUpdated,
+            Constants.SourceAdded,
+            Constants.SourceRemoved,
+            Constants.SourceUpdated,
+            Constants.StreamingStatusChanged,
+            Constants.RecordingStatusChanged,
+            Constants.ReplayBufferStatusChanged,
+            Constants.СollectionSwitched,
+            Constants.СollectionAdded,
+            Constants.СollectionRemoved,
+            Constants.СollectionUpdated,
 
-            var itemAdded = GetJsonRequest("itemAdded", Constants.ScenesService);
-            var itemRemoved = GetJsonRequest("itemRemoved", Constants.ScenesService);
-            var itemUpdated = GetJsonRequest("itemUpdated", Constants.ScenesService);
+            Constants.StudioModeChanged,
+            /*Virtual cam event to be added */
+            
+        };
 
-            var sourceAdded = GetJsonRequest("sourceAdded", Constants.SourcesService);
-            var sourceRemoved = GetJsonRequest("sourceRemoved", Constants.SourcesService);
-            var sourceUpdated = GetJsonRequest("sourceUpdated", Constants.SourcesService);
-
-            var streamingStatusChange = GetJsonRequest("streamingStatusChange", Constants.StreamingService);
-            var recordingStatusChange = GetJsonRequest("recordingStatusChange", Constants.StreamingService);
-            var replayBufferStatusChange = GetJsonRequest("replayBufferStatusChange", Constants.StreamingService);
-
-            var collectionSwitched = GetJsonRequest("collectionSwitched", Constants.SceneCollectionsService);
-
-            var studioModeChange = GetJsonRequest("studioModeChanged", Constants.TransitionsService);
-
-            var requests = new List<String>
+        private void HandleEventsSubscription(Boolean Subscribe)
+        {
+            var request = "";
+            foreach (var subscriber in SubscribedEvents)
             {
-                sceneSwitched,
-                sceneAdded,
-                sceneRemoved,
 
-                itemAdded,
-                itemRemoved,
-                itemUpdated,
-
-                sourceAdded,
-                sourceRemoved,
-                sourceUpdated,
-
-                streamingStatusChange,
-                recordingStatusChange,
-                replayBufferStatusChange,
-
-                collectionSwitched,
-
-                studioModeChange,
-            };
-
-            var request = String.Join("\n", requests);
+                //Get Service and Event name from the subscribed event
+                request += (request.Length > 0 ? "\n":"")
+                        + (Subscribe
+                            ? MakeRequest(subscriber.Split('.')[1], subscriber.Split('.')[0])
+                            : MakeRequest(Constants.Unsubscribe, subscriber));
+            }
 
             this.ExecuteSubscription(request);
         }
 
-        internal void UnSubscribeFromKnownEvents()
-        {
-            var sceneSwitched = GetJsonRequest(Constants.Unsubscribe, $"{Constants.ScenesService}.sceneSwitched");
-            var sceneAdded = GetJsonRequest(Constants.Unsubscribe, $"{Constants.ScenesService}.sceneAdded");
-            var sceneRemoved = GetJsonRequest(Constants.Unsubscribe, $"{Constants.ScenesService}.sceneRemoved");
+        private void SubscribeToKnownEvents() => this.HandleEventsSubscription(true);
 
-            var itemAdded = GetJsonRequest(Constants.Unsubscribe, $"{Constants.ScenesService}.itemAdded");
-            var itemRemoved = GetJsonRequest(Constants.Unsubscribe, $"{Constants.ScenesService}.itemRemoved");
-            var itemUpdated = GetJsonRequest(Constants.Unsubscribe, $"{Constants.ScenesService}.itemUpdated");
+        private void UnSubscribeFromKnownEvents() => this.HandleEventsSubscription(false);
 
-            var sourceAdded = GetJsonRequest(Constants.Unsubscribe, $"{Constants.SourcesService}.sourceAdded");
-            var sourceRemoved = GetJsonRequest(Constants.Unsubscribe, $"{Constants.SourcesService}.sourceRemoved");
-            var sourceUpdated = GetJsonRequest(Constants.Unsubscribe, $"{Constants.SourcesService}.sourceUpdated");
-
-            var streamingStatusChange = GetJsonRequest(Constants.Unsubscribe, $"{Constants.StreamingService}.streamingStatusChange");
-            var recordingStatusChange = GetJsonRequest(Constants.Unsubscribe, $"{Constants.StreamingService}.recordingStatusChange");
-            var replayBufferStatusChange = GetJsonRequest(Constants.Unsubscribe, $"{Constants.StreamingService}.replayBufferStatusChange");
-
-            var collectionSwitched = GetJsonRequest(Constants.Unsubscribe, $"{Constants.SceneCollectionsService}.collectionSwitched");
-
-            var studioModeChange = GetJsonRequest(Constants.Unsubscribe, $"{Constants.TransitionsService}.studioModeChanged");
-
-            var requests = new List<String>
-            {
-                sceneSwitched,
-                sceneAdded,
-                sceneRemoved,
-
-                itemAdded,
-                itemRemoved,
-                itemUpdated,
-
-                sourceAdded,
-                sourceRemoved,
-                sourceUpdated,
-
-                streamingStatusChange,
-                recordingStatusChange,
-                replayBufferStatusChange,
-
-                collectionSwitched,
-
-                studioModeChange,
-            };
-
-            var request = String.Join("\n", requests);
-
-            this.ExecuteSubscription(request);
-        }
-
-        private static String GetJsonRequest(String method, String service)
+        private static String MakeRequest(String method, String service)
         {
             return SlobsRequestBuilder.NewRequest()
                 .SetMethod(method)
@@ -268,99 +189,82 @@
         public event EventHandler<EventArgs> RecordingPaused;
         public event EventHandler<EventArgs> RecordingResumed;
         public event EventHandler<BoolParamArgs> StudioModeSwitched;
-        
-        public class SlobEventOuterJson
-        {
-            [JsonProperty("id")]
-            public String Id { get; set; }
-
-            [JsonProperty("result")]
-            [JsonConverter(typeof(SingleOrArrayConverter<SlobEventInnerJson>))]
-            public IEnumerable<SlobEventInnerJson> Result { get; set; }
-        }
-
-        internal class SlobEventInnerJson
-        {
-            [JsonProperty("id")]
-            public String Id { get; set; }
-
-            [JsonProperty("_type")]
-            public String Type { get; set; }
-
-            [JsonProperty("resourceId")]
-            public String ResourceId { get; set; }
-
-            [JsonProperty("data")]
-            public String Data{ get; set; }
-
-        }
-
+        /*Note using OldNewStringChange args here for compatibility*/
+        public event EventHandler<OldNewStringChangeEventArgs> SceneCollectionChanged;
+        /*For all additions, removals etc*/
+        public event EventHandler<EventArgs> SceneCollectionListChanged;
+        public event EventHandler<EventArgs> SceneListChanged;
+        public event EventHandler<OneStringEventArgs> CurrentSceneChanged;
         private void OnStreamlabsEvent(Object sender, OneStringEventArgs arg)
         {
             try
             {
-                var x = JsonConvert.DeserializeObject<SlobEventOuterJson>(arg.s);
-                SlobEventInnerJson result = x.Result.FirstOrDefault();
-
-                this.Plugin.Log.Info($"SL: OnStreamlabsEvent: {arg.s}");
-
-                if (result.Type == "EVENT")
+                var response = JObject.Parse(arg.Value);
+                JToken result = response["result"];
+                if ( response == null || result == null || result["_type"] == null || result["_type"].ToString() != "EVENT")
                 {
-                    switch (result.ResourceId)
-                    {
-                        case Constants.StreamingStatusChanged:
-                            if (AppProxy._streamingStatusDictionary.ContainsKey(result.Data))
-                            {
-                                this.StreamingStateChanged?.Invoke(this, new StreamingStateArgs(AppProxy._streamingStatusDictionary[result.Data]));
-                            }
-                            break;
-                        case Constants.RecordingStatusChanged:
-                            if (AppProxy._recordingStatusDictionary.ContainsKey(result.Data))
-                            {
-                                this.RecordingStateChanged?.Invoke(this, new RecordingStateArgs(AppProxy._recordingStatusDictionary[result.Data]));
-                            }
-                            break;
-                        case Constants.StudioModeChanged:
-                            //The .Data  string contains boolean we need to read it 
-                            if ( Boolean.TryParse(result.Data, out var studioModeState) )
-                            {
-                                this.StudioModeSwitched?.Invoke(this, new BoolParamArgs(studioModeState));    
-                            }
-                            break;
+                    this.Plugin.Log.Warning($"SL: No event data in OnStreamlabsEvent: {arg.Value}");
+                    return;
+                }
 
-                        case Constants.ReplayBufferStatusChanged:
-                            if (AppProxy._replayBufferStatusDictionary.ContainsKey(result.Data))
-                            {
-                                this.ReplayBufferStateChanged?.Invoke(this, new ReplayBufferEventArgs(AppProxy._replayBufferStatusDictionary[result.Data]));
-                            }
-                            break;
+                var resourceId = result["resourceId"].ToString();
 
-                        case Constants.SceneSwitched: break;
-                        case Constants.SceneAdded: break;
-                        case Constants.SceneRemoved: break;
+                this.Plugin.Log.Info($"SL: OnStreamlabsEvent from: {resourceId}");
 
-                        case Constants.SourceAdded:
-                            break;
-                        case Constants.SourceRemoved:
-                            break;
-                        case Constants.SourceUpdated:
-                            break;
+                switch (resourceId)
+                {
+                        
+                    case Constants.StreamingStatusChanged:
+                        //We don't really have to check if the key is in dictionary -- worst case it'll throw an exception and we catch it
+                        this.StreamingStateChanged?.Invoke(this, new StreamingStateArgs(AppProxy._streamingStatusDictionary[result["data"].ToString()]));
+                        
+                        break;
+                    case Constants.RecordingStatusChanged:
+                        this.RecordingStateChanged?.Invoke(this, new RecordingStateArgs(AppProxy._recordingStatusDictionary[result["data"].ToString()]));
+                        break;
+                    case Constants.ReplayBufferStatusChanged:
+                        this.ReplayBufferStateChanged?.Invoke(this, new ReplayBufferEventArgs(AppProxy._replayBufferStatusDictionary[result["data"].ToString()]));
+                        break;
 
-                        case Constants.ItemAdded:
-                            break;
-                        case Constants.ItemRemoved:
-                            break;
-                        case Constants.ItemUpdated:
-                            break;
+                    case Constants.StudioModeChanged:
+                        this.StudioModeSwitched?.Invoke(this, new BoolParamArgs(Boolean.Parse(result["data"].ToString())));
+                        break;
 
-                        case Constants.СollectionSwitched:
-                            break;
-                    }
+                    case Constants.СollectionSwitched:
+                        this.SceneCollectionChanged?.Invoke(this, new OldNewStringChangeEventArgs(this.CurrentSceneCollection, result["data"]["name"].ToString()));
+                        break;
+                    case Constants.СollectionAdded:
+                    case Constants.СollectionRemoved:
+                    case Constants.СollectionUpdated:
+                        this?.SceneCollectionListChanged?.Invoke(this, null);
+                        break;
+
+
+                    case Constants.SceneSwitched:
+                        this.CurrentSceneChanged?.Invoke(this, new OneStringEventArgs(result["data"]["name"].ToString()));
+                        break;
+                    case Constants.SceneAdded:
+                    case Constants.SceneRemoved:
+
+                    case Constants.ItemAdded:
+                    case Constants.ItemRemoved:
+                    case Constants.ItemUpdated:
+
+                    case Constants.SourceAdded:
+                    case Constants.SourceRemoved:
+                    case Constants.SourceUpdated:
+
+                    
+
+                    default:
+                        this.Plugin.Log.Info($"SL: OnStreamlabsEvent: No handler for {resourceId}. Result[data]={result["data"]}");
+                        break;
+            
                 }
             } 
             catch(Exception e)
             {
-                this.Plugin.Log.Error($"SL: OnStreamlabsEvent: {e.Message}");
+                this.Plugin.Log.Error($"SL:OnStreamlabsEvent exception: {e.Message}\n\tInput: {arg.Value}, ");
             }
             
         }

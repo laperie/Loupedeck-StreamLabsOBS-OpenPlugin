@@ -42,7 +42,7 @@
         {
             StreamlabsPlugin.Proxy.AppConnected += this.OnAppConnected;
             StreamlabsPlugin.Proxy.AppDisconnected += this.OnAppDisconnected;
-            //StreamlabsPlugin.Proxy.AppEvtSceneListChanged += this.OnSceneListChanged;
+            StreamlabsPlugin.Proxy.AppEvtSceneListChanged += this.OnSceneListChanged;
 
             return true;
         }
@@ -51,7 +51,7 @@
         {
             StreamlabsPlugin.Proxy.AppConnected -= this.OnAppConnected;
             StreamlabsPlugin.Proxy.AppDisconnected -= this.OnAppDisconnected;
-            //StreamlabsPlugin.Proxy.AppEvtSceneListChanged -= this.OnSceneListChanged;
+            StreamlabsPlugin.Proxy.AppEvtSceneListChanged -= this.OnSceneListChanged;
 
             return true;
         }

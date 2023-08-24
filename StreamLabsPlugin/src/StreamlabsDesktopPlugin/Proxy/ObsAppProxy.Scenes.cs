@@ -3,6 +3,8 @@ namespace Loupedeck.StreamlabsPlugin
     using System;
     using System.Collections.Generic;
 
+    using SLOBSharp.Domain.Services;
+
     internal class LDSceneItem
     {
         public String SourceName { get; private set; }
@@ -19,9 +21,9 @@ namespace Loupedeck.StreamlabsPlugin
             this.Items = scene.Items.ConvertAll(x => new LDSceneItem(x.SourceName));
         }
     */
-        public Scene()
+        public Scene(String name="")
         {
-            this.Name = "";
+            this.Name = name;
             this.Items = new List<LDSceneItem>();
         }
     }
@@ -35,9 +37,9 @@ namespace Loupedeck.StreamlabsPlugin
         public event EventHandler<EventArgs> AppEvtSceneListChanged;
 
         public event EventHandler<OldNewStringChangeEventArgs> AppEvtCurrentSceneChanged;
-        public Scene CurrentScene { get; private set; } = new Scene();
+        public Loupedeck.StreamlabsPlugin.Scene CurrentScene { get; private set; } = new Loupedeck.StreamlabsPlugin.Scene();
 
-        public List<Scene> Scenes { get; private set; } = new List<Scene>();
+        public List<Loupedeck.StreamlabsPlugin.Scene> Scenes { get; private set; } = new List<Loupedeck.StreamlabsPlugin.Scene>();
 
         
 
@@ -47,7 +49,7 @@ namespace Loupedeck.StreamlabsPlugin
         /// <param name="sceneName">Name of scene</param>
         /// <param name="scene">scene object</param>
         /// <returns>true if scene retreived</returns>
-        public Boolean TryGetSceneByName(String sceneName, out Scene scene)
+        public Boolean TryGetSceneByName(String sceneName, out Loupedeck.StreamlabsPlugin.Scene scene)
         {
             scene = null;
             if(!String.IsNullOrEmpty(sceneName))
@@ -66,24 +68,25 @@ namespace Loupedeck.StreamlabsPlugin
                 {
                     if (this._currentStudioMode)
                     {
-                        //this.SetPreviewScene(newScene);
+                        this.SetPreviewScene(newScene);
                     }
                     else
                     {
-                        //this.SetCurrentScene(newScene);
+                        this.SetCurrentScene(newScene);
                     }
                 });
             }
         }
-#if false
+
         private void OnObsSceneListChanged(Object sender, EventArgs e)
         {
             // Rescan the scene list
-            if (this.IsAppConnected && Helpers.TryExecuteFunc(() => this.GetSceneList(), out var listInfo))
+            if (this.IsAppConnected && Helpers.TryExecuteFunc(() => this.GetSceneList(), out var scenesList))
             {
-                this.Scenes = listInfo.Scenes.ConvertAll(x => new Scene(x));
 
-                this.Plugin.Log.Info($"OBS Rescanned scene list. Currently {this.Scenes?.Count} scenes in collection {this.CurrentSceneCollection} ");
+                this.Scenes = scenesList;
+
+                this.Plugin.Log.Info($"SLOBS Rescanned scene list. Currently {this.Scenes?.Count} scenes in collection {this.CurrentSceneCollection} ");
 
                 // Retreiving properties for all scenes
                 this.OnObsSceneCollectionChange_FetchSceneItems();
@@ -92,15 +95,16 @@ namespace Loupedeck.StreamlabsPlugin
                 {
                     if (!String.IsNullOrEmpty(scene.Name) && !scene.Name.Equals(this.CurrentScene?.Name))
                     {
-                        this.OnObsSceneChanged(e, scene.Name);
+                        this.OnObsSceneChanged(e, new OneStringEventArgs(scene.Name));
                     }
                 }
                 else
                 {
                     this.Plugin.Log.Warning("SceneListChanged: cannot fetch current scene");
                 }
-
+#if false
                 this.OnObsSceneCollectionChanged_RetreiveAudioSources();
+#endif
                 this.AppEvtSceneListChanged?.Invoke(sender, e);
             }
             else
@@ -108,6 +112,7 @@ namespace Loupedeck.StreamlabsPlugin
                 this.Plugin.Log.Warning("Cannot handle SceneListChanged event");
             }
         }
+
         private void OnSceneChanged(String newScene)
         {
             if (this.TryGetSceneByName(newScene, out var scene) && this.CurrentScene != scene)
@@ -137,37 +142,40 @@ namespace Loupedeck.StreamlabsPlugin
             // This the same as onObsSceneChanged but in previewmode
             // For Studio mode, OBS plugin will set / monitor Preview scenes, not main scene
             //  NB: the SceneChange command changes program scene, not a preview one
-            if(this._studioMode)
+            if(this._currentStudioMode)
             {
-                //this.OnSceneChanged(newScene);
+                this.OnSceneChanged(newScene);
             }
             else
             {
                 this.Plugin.Log.Info($"PreviewSceneChange to {newScene} but not in Studio mode, igrnoring");
             }
         }
-        private void OnObsTransitionEnd(OBSWebsocket sender, String transitionName, String transitionType, Int32 duration, String toScene)
+        private void OnObsTransitionEnd(Object sender, String transitionName, String transitionType, Int32 duration, String toScene)
         {
             this.Plugin.Log.Info($"Transition {transitionName} to scene {toScene} ended");
-            if (this._studioMode)
+            if (this._currentStudioMode)
             {
                 //In studio mode (see above), the selected scene == Program scene
                 this.OnSceneChanged(toScene);
             }
         }
 
-        private void OnObsSceneChanged(Object sender, String newScene)
+        private void OnObsSceneChanged(Object sender, OneStringEventArgs arg)
         {
-            if (!this._studioMode)
+            if (!this._currentStudioMode)
             {
-                this.OnSceneChanged(newScene);
+                this.OnSceneChanged(arg.Value);
             }
             else
             {
+                //FIXME: FOR SLOBS, at least temporarily, we do the same 
+
+                this.OnSceneChanged(arg.Value);
                 //This is handled in OnObsTransitionEnd
-                this.Plugin.Log.Info($"OnObsSceneChanged to {newScene} ignoring in Studio mode");
+                // -> ???this.Plugin.Log.Info($"OnObsSceneChanged to {arg.Value} ignoring in Studio mode");
             }
         }
-#endif        
+
     }
 }
