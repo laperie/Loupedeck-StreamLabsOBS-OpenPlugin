@@ -44,7 +44,7 @@ namespace SLOBSharp.Domain.Services
 
         void DisposeSubscriptionPipe();
 
-        event EventHandler<OneStringEventArgs> subscriptionEvt;
+        event EventHandler<OneStringEventArgs> SubscriptionEvt;
 
         #endregion
     }
@@ -52,8 +52,8 @@ namespace SLOBSharp.Domain.Services
 
     public class OneStringEventArgs : EventArgs
     {
-        public String s { get; private set; }
-        public OneStringEventArgs(String name) => this.s = name;
+        public String Value { get; private set; }
+        public OneStringEventArgs(String name) => this.Value = name;
 
     }
 
@@ -68,10 +68,10 @@ namespace SLOBSharp.Domain.Services
         private StreamWriter _writer;
 
         
-        public event EventHandler<OneStringEventArgs> subscriptionEvt;
+        public event EventHandler<OneStringEventArgs> SubscriptionEvt;
         /*
         public delegate void SubscriptionResponseReadedHandler(OneStringEventArgs eventArgs);
-        public event SubscriptionResponseReadedHandler subscriptionEvt;
+        public event SubscriptionResponseReadedHandler SubscriptionEvt;
         */
         public void InitSubscriptionPipe()
         {
@@ -145,7 +145,7 @@ namespace SLOBSharp.Domain.Services
                 
                 if (!String.IsNullOrEmpty(response))
                 {
-                    subscriptionEvt?.Invoke(this, new OneStringEventArgs(response));
+                    SubscriptionEvt?.Invoke(this, new OneStringEventArgs(response));
                 }
                 else
                 {
@@ -164,7 +164,7 @@ namespace SLOBSharp.Domain.Services
 
                 if (!String.IsNullOrEmpty(response))
                 {
-                    subscriptionEvt?.Invoke(this, new OneStringEventArgs(response));
+                    SubscriptionEvt?.Invoke(this, new OneStringEventArgs(response));
                 }
             }
 
