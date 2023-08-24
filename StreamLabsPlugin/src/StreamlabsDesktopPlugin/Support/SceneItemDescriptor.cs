@@ -9,7 +9,7 @@
 
         public String SourceName { get; private set; }
 
-        //It's not "private set" because the visibility will be triggered by an event handler
+        //It'Value not "private set" because the visibility will be triggered by an event handler
         public Boolean Visible { get; set; } 
 
         /// <summary>
