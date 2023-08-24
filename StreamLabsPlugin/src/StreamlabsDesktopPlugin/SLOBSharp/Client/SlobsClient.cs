@@ -106,7 +106,7 @@ namespace SLOBSharp.Client
         {
             this.slobsService = slobsService;
             //Fixme: this construction looks like a hack. Need to be refactored.
-            slobsService.subscriptionEvt += (sender, args) => subscriptionEvt?.Invoke(sender, args);
+            slobsService.SubscriptionEvt += (sender, args) => subscriptionEvt?.Invoke(sender, args);
         }
 
         public static ISlobsClient NewPipeClient() => new SlobsPipeClient();

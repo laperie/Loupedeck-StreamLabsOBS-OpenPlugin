@@ -59,14 +59,14 @@
         }
 
         /// <summary>
-        /// Connects command's On and Off events to the source (application)
+        /// Connects command'Value On and Off events to the source (application)
         /// </summary>
         /// <param name="eventSwitchedOff">Event fired AFTER switch is turned off</param>
         /// <param name="eventSwitchedOn">Event fired AFTER switch is turned on</param>
         protected abstract void ConnectAppEvents(EventHandler<EventArgs> eventSwitchedOff, EventHandler<EventArgs> eventSwitchedOn);
 
         /// <summary>
-        /// Disconnects command's On and Off events to the source (application)
+        /// Disconnects command'Value On and Off events to the source (application)
         /// </summary>
         /// <param name="eventSwitchedOff">Event fired AFTER switch is turned off</param>
         /// <param name="eventSwitchedOn">Event fired AFTER switch is turned on</param>

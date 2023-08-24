@@ -24,13 +24,13 @@
 
         private void OnObsVirtualCameraStarted(Object sender, EventArgs e)
         {
-            this.Plugin.Log.Info("Obs Virtual camera started");
+            this.Plugin.Log.Info("Virtual camera started");
             this.AppEvtVirtualCamOn?.Invoke(this, new EventArgs());
         }
 
         private void OnObsVirtualCameraStopped(Object sender, EventArgs e)
         {
-            this.Plugin.Log.Info("Obs Virtual camera stopped");
+            this.Plugin.Log.Info("Virtual camera stopped");
             this.AppEvtVirtualCamOff?.Invoke(this, new EventArgs());
         }
 

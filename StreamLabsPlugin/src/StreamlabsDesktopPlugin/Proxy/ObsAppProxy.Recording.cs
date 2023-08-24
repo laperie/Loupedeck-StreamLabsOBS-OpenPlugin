@@ -58,7 +58,8 @@
         }
 
         private void StopRecording() 
-        { if (this.InRecording)
+        { 
+            if (this.InRecording)
             {
                 this.ToggleRecording();
             }

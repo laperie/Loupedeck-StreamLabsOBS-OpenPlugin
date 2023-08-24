@@ -22,7 +22,7 @@
         public UniversalStateSwitch()
         {
 
-            this.DisplayName = "Set OBS Toggle On/Off";
+            this.DisplayName = "Set Streamlabs Toggle On/Off";
             this.Description = "Sets a specific action toggle to go to a pre-defined state. This is particularly useful to ensure that a Toggle is set on or off in custom Multi-Action.";
             this.GroupName = "";
 
